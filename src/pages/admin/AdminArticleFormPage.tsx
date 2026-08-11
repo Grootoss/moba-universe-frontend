@@ -35,9 +35,11 @@ export default function AdminArticleFormPage() {
   const [titleRu, setTitleRu] = useState('')
   const [excerptRu, setExcerptRu] = useState('')
   const [contentRu, setContentRu] = useState('')
+  const [mlbbExampleRu, setMlbbExampleRu] = useState('')
   const [titleEn, setTitleEn] = useState('')
   const [excerptEn, setExcerptEn] = useState('')
   const [contentEn, setContentEn] = useState('')
+  const [mlbbExampleEn, setMlbbExampleEn] = useState('')
 
   usePageTitle(isEdit ? t('adminArticleEdit') : t('adminArticleNew'))
 
@@ -47,8 +49,18 @@ export default function AdminArticleFormPage() {
     status,
     cover_image: coverImage.trim() || null,
     translations: {
-      ru: { title: titleRu.trim(), excerpt: excerptRu.trim(), content: contentRu.trim() },
-      en: { title: titleEn.trim(), excerpt: excerptEn.trim(), content: contentEn.trim() },
+      ru: {
+        title: titleRu.trim(),
+        excerpt: excerptRu.trim(),
+        content: contentRu.trim(),
+        mlbb_example: mlbbExampleRu.trim(),
+      },
+      en: {
+        title: titleEn.trim(),
+        excerpt: excerptEn.trim(),
+        content: contentEn.trim(),
+        mlbb_example: mlbbExampleEn.trim(),
+      },
     },
   })
 
@@ -69,9 +81,11 @@ export default function AdminArticleFormPage() {
           setTitleRu(a.title_ru || '')
           setExcerptRu(a.excerpt_ru || '')
           setContentRu(a.content_ru || '')
+          setMlbbExampleRu(a.mlbb_example_ru || '')
           setTitleEn(a.title_en || '')
           setExcerptEn(a.excerpt_en || '')
           setContentEn(a.content_en || '')
+          setMlbbExampleEn(a.mlbb_example_en || '')
         } else if (cats[0]) {
           setCategorySlug(cats[0].slug)
         }
@@ -175,6 +189,10 @@ export default function AdminArticleFormPage() {
                 <span>{t('adminArticleContent')}</span>
                 <textarea rows={12} value={contentRu} onChange={(e) => setContentRu(e.target.value)} />
               </label>
+              <label className="admin-field">
+                <span>{t('adminArticleMlbbExample')}</span>
+                <textarea rows={8} value={mlbbExampleRu} onChange={(e) => setMlbbExampleRu(e.target.value)} />
+              </label>
             </fieldset>
 
             <fieldset className="admin-lang-block">
@@ -190,6 +208,10 @@ export default function AdminArticleFormPage() {
               <label className="admin-field">
                 <span>{t('adminArticleContent')}</span>
                 <textarea rows={12} value={contentEn} onChange={(e) => setContentEn(e.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>{t('adminArticleMlbbExampleEn')}</span>
+                <textarea rows={8} value={mlbbExampleEn} onChange={(e) => setMlbbExampleEn(e.target.value)} />
               </label>
             </fieldset>
           </div>

@@ -6,6 +6,7 @@ export async function fetchArticlesPage(options: {
   page?: number
   pageSize?: number
   q?: string
+  category?: string
 }): Promise<ArticlesPage> {
   const params = new URLSearchParams({
     paginated: 'true',
@@ -14,6 +15,8 @@ export async function fetchArticlesPage(options: {
   })
   const q = options.q?.trim()
   if (q) params.set('q', q)
+  const category = options.category?.trim()
+  if (category) params.set('category', category)
 
   const response = await fetch(`${API_BASE}?${params}`)
   if (!response.ok) {

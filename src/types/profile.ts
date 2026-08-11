@@ -76,6 +76,8 @@ export interface AdminArticle {
   excerpt_en?: string | null
   content_ru?: string | null
   content_en?: string | null
+  mlbb_example_ru?: string | null
+  mlbb_example_en?: string | null
 }
 
 export interface AdminCategory {
@@ -90,7 +92,7 @@ export interface ArticleFormPayload {
   status: string
   cover_image?: string | null
   translations: {
-    ru: { title: string; excerpt: string; content: string }
-    en: { title: string; excerpt: string; content: string }
+    ru: { title: string; excerpt: string; content: string; mlbb_example: string }
+    en: { title: string; excerpt: string; content: string; mlbb_example: string }
   }
 }
