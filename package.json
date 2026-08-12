@@ -6,8 +6,9 @@
   "scripts": {
     "sync:vue": "node scripts/sync-from-vue.mjs",
     "dev": "npm run sync:vue && vite",
-    "build": "tsc -b && vite build && node scripts/prerender.mjs",
-    "build:app": "tsc -b && vite build",
+    "build": "npm run generate:favicons && tsc -b && vite build && node scripts/prerender.mjs",
+    "build:app": "npm run generate:favicons && tsc -b && vite build",
+    "generate:favicons": "node scripts/generate-favicons.mjs",
     "prerender": "node scripts/prerender.mjs",
     "preview": "vite preview",
     "test": "vitest run",
