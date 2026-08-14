@@ -8,7 +8,7 @@ import ErrorState from '../components/ErrorState'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
-import { categoryDisplayName, sortArticleCategories } from '../utils/articleCategories'
+import { categoryDisplayName, ensureArticleCategories } from '../utils/articleCategories'
 import { siteOrigin } from '../utils/prerender'
 import type { Article, Lang } from '../types/article'
 import type { ArticleCategory } from '../api/categories'
@@ -31,7 +31,7 @@ export default function ArticlesListPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(false)
 
-  const sortedCategories = useMemo(() => sortArticleCategories(categories), [categories])
+  const sortedCategories = useMemo(() => ensureArticleCategories(categories), [categories])
 
   const previews = useMemo(
     () =>
