@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchArticlesPage } from '../api/articles'
 import { fetchCategories } from '../api/categories'
@@ -8,6 +8,7 @@ import ErrorState from '../components/ErrorState'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
+import { categoryDisplayName, sortArticleCategories } from '../utils/articleCategories'
 import { siteOrigin } from '../utils/prerender'
 import type { Article, Lang } from '../types/article'
 import type { ArticleCategory } from '../api/categories'
@@ -17,16 +18,20 @@ const PAGE_SIZE = 6
 export default function ArticlesListPage() {
   const { t, i18n } = useTranslation()
   const { lang = 'ru' } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const categorySlug = (searchParams.get('category') ?? '').trim()
 
   const [articles, setArticles] = useState<Article[]>([])
   const [categories, setCategories] = useState<ArticleCategory[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [query, setQuery] = useState('')
-  const [categorySlug, setCategorySlug] = useState('')
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(false)
+
+  const sortedCategories = useMemo(() => sortArticleCategories(categories), [categories])
 
   const previews = useMemo(
     () =>
@@ -48,40 +53,49 @@ export default function ArticlesListPage() {
 
   const emptyMessage = categorySlug ? t('articlesCategoryEmpty') : t('articlesEmpty')
 
+  const listUrl = useMemo(() => {
+    const base = `${siteOrigin()}/${lang}/evergreen`
+    if (!categorySlug) return base
+    return `${base}?category=${encodeURIComponent(categorySlug)}`
+  }, [lang, categorySlug])
+
   const listSchema = useMemo(
     () => ({
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: t('articlesTitle'),
       inLanguage: lang,
-      url: `${siteOrigin()}/${lang}/evergreen`,
+      url: listUrl,
       description: t('articlesSubtitle'),
     }),
-    [t, lang],
+    [t, lang, listUrl],
   )
 
   usePageTitle(t('articlesTitle'), t('articlesSubtitle'))
   useJsonLd(listSchema)
   usePrerenderReady(!loading)
 
-  const loadFirstPage = async (opts?: { q?: string; category?: string }) => {
-    const q = opts?.q ?? query
-    const category = opts?.category ?? categorySlug
-    setLoading(true)
-    setError(false)
-    setPage(1)
-    try {
-      const data = await fetchArticlesPage({ page: 1, pageSize: PAGE_SIZE, q, category })
-      setArticles(data.items)
-      setTotal(data.total)
-    } catch {
-      setError(true)
-      setArticles([])
-      setTotal(0)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const loadFirstPage = useCallback(
+    async (opts?: { q?: string; category?: string }) => {
+      const q = opts?.q ?? query
+      const category = opts?.category ?? categorySlug
+      setLoading(true)
+      setError(false)
+      setPage(1)
+      try {
+        const data = await fetchArticlesPage({ page: 1, pageSize: PAGE_SIZE, q, category })
+        setArticles(data.items)
+        setTotal(data.total)
+      } catch {
+        setError(true)
+        setArticles([])
+        setTotal(0)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [query, categorySlug],
+  )
 
   const loadMore = async () => {
     if (!hasMore || loadingMore) return
@@ -108,8 +122,12 @@ export default function ArticlesListPage() {
     void fetchCategories()
       .then(setCategories)
       .catch(() => setCategories([]))
-    void loadFirstPage()
   }, [])
+
+  useEffect(() => {
+    void loadFirstPage({ category: categorySlug })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload list when URL category changes
+  }, [categorySlug])
 
   const queryBootstrapped = useRef(false)
   useEffect(() => {
@@ -121,15 +139,14 @@ export default function ArticlesListPage() {
       void loadFirstPage()
     }, 300)
     return () => clearTimeout(timer)
-  }, [query])
+  }, [query, loadFirstPage])
 
   const onCategorySelect = (slug: string) => {
-    setCategorySlug(slug)
-    void loadFirstPage({ category: slug })
+    const next = new URLSearchParams(searchParams)
+    if (slug) next.set('category', slug)
+    else next.delete('category')
+    setSearchParams(next, { replace: true })
   }
-
-  const categoryLabel = (cat: ArticleCategory) =>
-    i18n.language === 'en' ? cat.name_en : cat.name_ru
 
   return (
     <div className="page">
@@ -161,7 +178,7 @@ export default function ArticlesListPage() {
         </button>
       </form>
 
-      {categories.length ? (
+      {sortedCategories.length ? (
         <nav className="articles-categories" aria-label={t('articlesCategoriesLabel')}>
           <button
             type="button"
@@ -170,14 +187,14 @@ export default function ArticlesListPage() {
           >
             {t('articlesCategoryAll')}
           </button>
-          {categories.map((cat) => (
+          {sortedCategories.map((cat) => (
             <button
               key={cat.slug}
               type="button"
-              className={`articles-categories__btn${categorySlug === cat.slug ? ' articles-categories__btn--active' : ''}`}
+              className={`articles-categories__btn${cat.slug === 'mlbb' ? ' articles-categories__btn--mlbb' : ''}${categorySlug === cat.slug ? ' articles-categories__btn--active' : ''}`}
               onClick={() => onCategorySelect(cat.slug)}
             >
-              {categoryLabel(cat)}
+              {categoryDisplayName(cat, i18n.language)}
             </button>
           ))}
         </nav>
