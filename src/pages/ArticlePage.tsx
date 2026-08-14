@@ -8,6 +8,7 @@ import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { formatArticleDate } from '../utils/formatDate'
 import { siteOrigin } from '../utils/prerender'
+import { absoluteMediaUrl, resolveMediaUrl } from '../utils/mediaUrl'
 import type { Article, Lang } from '../types/article'
 
 export default function ArticlePage() {
@@ -41,6 +42,8 @@ export default function ArticlePage() {
   const createdLabel = formatArticleDate(article?.created_at, lang)
   const updatedLabel = formatArticleDate(article?.updated_at, lang)
 
+  const coverSrc = resolveMediaUrl(article?.cover_image)
+
   const articleSchema = useMemo(() => {
     if (!article || !translation) return null
     const url = `${siteOrigin()}/${lang}/evergreen/${article.slug}`
@@ -54,11 +57,7 @@ export default function ArticlePage() {
       url,
       datePublished: article.created_at || undefined,
       dateModified: article.updated_at || article.created_at || undefined,
-      image: article.cover_image
-        ? article.cover_image.startsWith('http')
-          ? article.cover_image
-          : `${siteOrigin()}${article.cover_image.startsWith('/') ? '' : '/'}${article.cover_image}`
-        : undefined,
+      image: absoluteMediaUrl(article.cover_image) || undefined,
       publisher: { '@type': 'Organization', name: 'Moba Universe' },
     }
   }, [article, translation, lang])
@@ -131,10 +130,10 @@ export default function ArticlePage() {
               ) : null}
             </p>
           ) : null}
-          {article.cover_image ? (
+          {coverSrc ? (
             <figure className="article__cover">
               <img
-                src={article.cover_image}
+                src={coverSrc}
                 alt={translation.title}
                 width={1200}
                 height={675}

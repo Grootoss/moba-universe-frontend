@@ -9,6 +9,7 @@ import {
 } from '../../api/admin'
 import type { AdminCategory, ArticleFormPayload } from '../../types/profile'
 import { usePageTitle } from '../../hooks/usePageTitle'
+import { resolveMediaUrl } from '../../utils/mediaUrl'
 
 export default function AdminArticleFormPage() {
   const { t } = useTranslation()
@@ -125,6 +126,8 @@ export default function AdminArticleFormPage() {
     }
   }
 
+  const coverPreviewSrc = resolveMediaUrl(coverImage)
+
   return (
     <div className="admin-page">
       <header className="admin-page__hero">
@@ -176,9 +179,9 @@ export default function AdminArticleFormPage() {
                 value={coverImage}
                 onChange={(e) => setCoverImage(e.target.value)}
               />
-              {coverImage.trim() ? (
+              {coverPreviewSrc ? (
                 <figure className="admin-cover-preview">
-                  <img src={coverImage.trim()} alt="" />
+                  <img src={coverPreviewSrc} alt="" />
                 </figure>
               ) : null}
             </label>

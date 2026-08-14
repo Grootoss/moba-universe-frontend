@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { siteOrigin } from '../utils/prerender'
+import { absoluteMediaUrl } from '../utils/mediaUrl'
 
 const SITE_NAME = 'Moba Universe'
 
@@ -43,11 +44,7 @@ function ensureMetaByAttr(attr: 'name' | 'property', value: string): HTMLMetaEle
 }
 
 function absoluteImageUrl(image?: string | null): string | null {
-  const raw = image?.trim()
-  if (!raw) return null
-  if (/^https?:\/\//i.test(raw)) return raw
-  const origin = siteOrigin() || window.location.origin
-  return `${origin.replace(/\/$/, '')}${raw.startsWith('/') ? raw : `/${raw}`}`
+  return absoluteMediaUrl(image)
 }
 
 export function usePageTitle(
