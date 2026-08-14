@@ -54,7 +54,11 @@ export default function ArticlePage() {
       url,
       datePublished: article.created_at || undefined,
       dateModified: article.updated_at || article.created_at || undefined,
-      image: article.cover_image || undefined,
+      image: article.cover_image
+        ? article.cover_image.startsWith('http')
+          ? article.cover_image
+          : `${siteOrigin()}${article.cover_image.startsWith('/') ? '' : '/'}${article.cover_image}`
+        : undefined,
       publisher: { '@type': 'Organization', name: 'Moba Universe' },
     }
   }, [article, translation, lang])
@@ -64,6 +68,7 @@ export default function ArticlePage() {
   usePageTitle(
     loading ? t('loading') : error || !translation ? t('errorArticleTitle') : translation.title,
     !translation ? t('errorArticleText') : translation.excerpt?.trim() || translation.title,
+    article?.cover_image || undefined,
   )
   usePrerenderReady(!loading)
 
@@ -126,12 +131,19 @@ export default function ArticlePage() {
               ) : null}
             </p>
           ) : null}
+          {article.cover_image ? (
+            <figure className="article__cover">
+              <img
+                src={article.cover_image}
+                alt={translation.title}
+                width={1200}
+                height={675}
+                decoding="async"
+                fetchPriority="high"
+              />
+            </figure>
+          ) : null}
         </header>
-        {article.cover_image ? (
-          <div className="article__cover">
-            <img src={article.cover_image} alt={translation.title} />
-          </div>
-        ) : null}
         <div className="article__content prose" dangerouslySetInnerHTML={{ __html: translation.text }} />
         {translation.mlbb_example?.trim() ? (
           <section className="article__mlbb">

@@ -170,9 +170,21 @@ export default function AdminArticleFormPage() {
             </label>
             <label className="admin-field admin-field--wide">
               <span>{t('adminArticleCover')}</span>
-              <input type="url" placeholder="https://example.com/cover.jpg" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} />
+              <input
+                type="text"
+                placeholder="/images/roles-03.png"
+                value={coverImage}
+                onChange={(e) => setCoverImage(e.target.value)}
+              />
+              {coverImage.trim() ? (
+                <figure className="admin-cover-preview">
+                  <img src={coverImage.trim()} alt="" />
+                </figure>
+              ) : null}
             </label>
           </div>
+
+          <p className="admin-hint">{t('adminArticleCoverHint')}</p>
 
           <div className="admin-form__langs">
             <fieldset className="admin-lang-block">
