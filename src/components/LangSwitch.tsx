@@ -18,7 +18,7 @@ export default function LangSwitch({ layout = 'inline' }: Props) {
     if (params.lang === lang) return
 
     const currentPath = location.pathname.replace(/^\/(ru|en)(?=\/|$)/, '')
-    void navigate(`/${lang}${currentPath || '/mlbb'}${location.search}${location.hash}`)
+    void navigate(`/${lang}${currentPath || ''}${location.search}${location.hash}`)
   }
 
   return (
@@ -32,15 +32,14 @@ export default function LangSwitch({ layout = 'inline' }: Props) {
         className={`lang-switch__btn${i18n.language === 'ru' ? ' lang-switch__btn--active' : ''}`}
         onClick={() => switchLang('ru')}
       >
-        ru
+        RU
       </button>
-      <span className="lang-switch__sep">/</span>
       <button
         type="button"
         className={`lang-switch__btn${i18n.language === 'en' ? ' lang-switch__btn--active' : ''}`}
         onClick={() => switchLang('en')}
       >
-        en
+        EN
       </button>
     </div>
   )

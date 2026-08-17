@@ -33,7 +33,7 @@ export function useSeoRoute() {
 
     const matched = cleanPath.match(/^\/(ru|en)(\/.*)?$/)
     const hasLang = Boolean(matched?.[1])
-    const tail = matched?.[2] || '/evergreen'
+    const tail = matched?.[2] ?? ''
     if (!hasLang) {
       document.head
         .querySelectorAll(`link[rel="alternate"][${MANAGED_ATTR}="1"]`)

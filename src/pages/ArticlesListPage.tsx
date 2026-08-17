@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchArticlesPage } from '../api/articles'
@@ -13,7 +13,8 @@ import { siteOrigin } from '../utils/prerender'
 import type { Article, Lang } from '../types/article'
 import type { ArticleCategory } from '../api/categories'
 
-const PAGE_SIZE = 6
+const PAGE_SIZE = 40
+const TAG_SKELETON_COUNT = 10
 
 export default function ArticlesListPage() {
   const { t, i18n } = useTranslation()
@@ -24,11 +25,9 @@ export default function ArticlesListPage() {
 
   const [articles, setArticles] = useState<Article[]>([])
   const [categories, setCategories] = useState<ArticleCategory[]>([])
-  const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
+  const [categoriesReady, setCategoriesReady] = useState(false)
   const [query, setQuery] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
+  const [listReady, setListReady] = useState(false)
   const [error, setError] = useState(false)
 
   const sortedCategories = useMemo(() => ensureArticleCategories(categories), [categories])
@@ -43,15 +42,15 @@ export default function ArticlesListPage() {
           title: tr?.title ?? article.slug,
           excerpt: tr?.excerpt || '',
           cover_image: article.cover_image || null,
+          cover_thumb: article.cover_thumb || null,
           updated_at: article.updated_at,
         }
       }),
     [articles, i18n.language],
   )
 
-  const hasMore = articles.length < total
-
   const emptyMessage = categorySlug ? t('articlesCategoryEmpty') : t('articlesEmpty')
+  const showTagSkeleton = error || !categoriesReady
 
   const listUrl = useMemo(() => {
     const base = `${siteOrigin()}/${lang}/evergreen`
@@ -73,73 +72,59 @@ export default function ArticlesListPage() {
 
   usePageTitle(t('articlesTitle'), t('articlesSubtitle'))
   useJsonLd(listSchema)
-  usePrerenderReady(!loading)
-
-  const loadFirstPage = useCallback(
-    async (opts?: { q?: string; category?: string }) => {
-      const q = opts?.q ?? query
-      const category = opts?.category ?? categorySlug
-      setLoading(true)
-      setError(false)
-      setPage(1)
-      try {
-        const data = await fetchArticlesPage({ page: 1, pageSize: PAGE_SIZE, q, category })
-        setArticles(data.items)
-        setTotal(data.total)
-      } catch {
-        setError(true)
-        setArticles([])
-        setTotal(0)
-      } finally {
-        setLoading(false)
-      }
-    },
-    [query, categorySlug],
-  )
-
-  const loadMore = async () => {
-    if (!hasMore || loadingMore) return
-    setLoadingMore(true)
-    try {
-      const next = page + 1
-      const data = await fetchArticlesPage({
-        page: next,
-        pageSize: PAGE_SIZE,
-        q: query,
-        category: categorySlug,
-      })
-      setArticles((prev) => [...prev, ...data.items])
-      setTotal(data.total)
-      setPage(next)
-    } catch {
-      setError(true)
-    } finally {
-      setLoadingMore(false)
-    }
-  }
+  usePrerenderReady(listReady && categoriesReady)
 
   useEffect(() => {
+    let cancelled = false
     void fetchCategories()
-      .then(setCategories)
-      .catch(() => setCategories([]))
+      .then((rows) => {
+        if (!cancelled) setCategories(rows)
+      })
+      .catch(() => {
+        if (!cancelled) setCategories([])
+      })
+      .finally(() => {
+        if (!cancelled) setCategoriesReady(true)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
-    void loadFirstPage({ category: categorySlug })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload list when URL category changes
-  }, [categorySlug])
+    let cancelled = false
+    setListReady(false)
+    setError(false)
 
-  const queryBootstrapped = useRef(false)
-  useEffect(() => {
-    if (!queryBootstrapped.current) {
-      queryBootstrapped.current = true
-      return
+    const run = async () => {
+      try {
+        const data = await fetchArticlesPage({
+          page: 1,
+          pageSize: PAGE_SIZE,
+          q: query,
+          category: categorySlug,
+        })
+        if (cancelled) return
+        setArticles(data.items)
+      } catch {
+        if (cancelled) return
+        setError(true)
+        setArticles([])
+      } finally {
+        if (!cancelled) setListReady(true)
+      }
     }
-    const timer = setTimeout(() => {
-      void loadFirstPage()
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [query, loadFirstPage])
+
+    const delay = query.trim() ? 300 : 0
+    const timer = window.setTimeout(() => {
+      void run()
+    }, delay)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [query, categorySlug])
 
   const onCategorySelect = (slug: string) => {
     const next = new URLSearchParams(searchParams)
@@ -159,7 +144,6 @@ export default function ArticlesListPage() {
         className="articles-search"
         onSubmit={(e) => {
           e.preventDefault()
-          void loadFirstPage()
         }}
       >
         <label className="articles-search__label">
@@ -178,31 +162,35 @@ export default function ArticlesListPage() {
         </button>
       </form>
 
-      {sortedCategories.length ? (
-        <nav className="articles-categories" aria-label={t('articlesCategoriesLabel')}>
-          <button
-            type="button"
-            className={`articles-categories__btn${categorySlug === '' ? ' articles-categories__btn--active' : ''}`}
-            onClick={() => onCategorySelect('')}
-          >
-            {t('articlesCategoryAll')}
-          </button>
-          {sortedCategories.map((cat) => (
+      <nav className="articles-categories" aria-label={t('articlesCategoriesLabel')}>
+        {showTagSkeleton ? (
+          Array.from({ length: TAG_SKELETON_COUNT }, (_, i) => (
+            <span key={i} className="articles-categories__skeleton" aria-hidden="true" />
+          ))
+        ) : (
+          <>
             <button
-              key={cat.slug}
               type="button"
-              className={`articles-categories__btn${cat.slug === 'mlbb' ? ' articles-categories__btn--mlbb' : ''}${categorySlug === cat.slug ? ' articles-categories__btn--active' : ''}`}
-              onClick={() => onCategorySelect(cat.slug)}
+              className={`articles-categories__btn${categorySlug === '' ? ' articles-categories__btn--active' : ''}`}
+              onClick={() => onCategorySelect('')}
             >
-              {categoryDisplayName(cat, i18n.language)}
+              {t('articlesCategoryAll')}
             </button>
-          ))}
-        </nav>
-      ) : null}
+            {sortedCategories.map((cat) => (
+              <button
+                key={cat.slug}
+                type="button"
+                className={`articles-categories__btn${cat.slug === 'mlbb' ? ' articles-categories__btn--mlbb' : ''}${categorySlug === cat.slug ? ' articles-categories__btn--active' : ''}`}
+                onClick={() => onCategorySelect(cat.slug)}
+              >
+                {categoryDisplayName(cat, i18n.language)}
+              </button>
+            ))}
+          </>
+        )}
+      </nav>
 
-      {loading ? (
-        <div className="state">{t('loading')}</div>
-      ) : error ? (
+      {error ? (
         <ErrorState
           title={t('errorArticlesTitle')}
           description={t('errorArticlesText')}
@@ -211,7 +199,7 @@ export default function ArticlesListPage() {
         />
       ) : (
         <>
-          {!previews.length ? <p className="state">{emptyMessage}</p> : null}
+          {listReady && !previews.length ? <p className="state">{emptyMessage}</p> : null}
           <div className="articles-grid">
             {previews.map((article, index) => (
               <ArticleCard
@@ -220,23 +208,12 @@ export default function ArticlesListPage() {
                 title={article.title}
                 excerpt={article.excerpt}
                 coverImage={article.cover_image}
+                coverThumb={article.cover_thumb}
                 updatedAt={article.updated_at}
                 index={index}
               />
             ))}
           </div>
-          {hasMore ? (
-            <div className="articles-more">
-              <button
-                type="button"
-                className="articles-more__btn"
-                disabled={loadingMore}
-                onClick={() => void loadMore()}
-              >
-                {loadingMore ? t('loading') : t('articlesLoadMore')}
-              </button>
-            </div>
-          ) : null}
         </>
       )}
     </div>

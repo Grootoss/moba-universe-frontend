@@ -15,9 +15,9 @@ export interface TermsDoc {
 export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
   ru: {
     title: 'Условия использования',
-    updatedLabel: 'Дата обновления: 10.08.2026',
+    updatedLabel: 'Дата обновления: 17.08.2026',
     intro:
-      'Moba Universe — неофициальный fan-made сайт об MOBA-играх. Мы не связаны с Moonton Technology Co., Ltd. и не одобрены ею. Материалы носят образовательный и информационный характер для игроков.',
+      'Moba Universe — неофициальный fan-made сайт об MOBA-играх: главная страница, гайды и личные страницы пользователей. Мы не связаны с Moonton Technology Co., Ltd. и не одобрены ею. Материалы носят образовательный и информационный характер для игроков.',
     sections: [
       {
         title: 'Неофициальный статус',
@@ -39,7 +39,8 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
         title: 'Профили игроков',
         paragraphs: [
           'Публичные профили создаются пользователями и проходят модерацию перед публикацией.',
-          'Ранги и игры в профиле указываются пользователем добровольно. Сайт не проверяет игровые аккаунты и не связан с игровыми серверами.',
+          'Ранги, роли 1–5 и игры в профиле указываются пользователем добровольно. Сайт не проверяет игровые аккаунты и не связан с игровыми серверами.',
+          'Поиск по имени, играм и ролям помогает находить игроков. Контактные данные (Telegram и другие ссылки) пользователь может сделать открытыми или закрытыми. Закрытые контакты передаются только после запроса и согласия другой стороны. Не используйте обмен контактами для спама, мошенничества или нарушения закона.',
         ],
       },
       {
@@ -67,9 +68,9 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
   },
   en: {
     title: 'Terms of Use',
-    updatedLabel: 'Last updated: 10 Aug 2026',
+    updatedLabel: 'Last updated: 17 Aug 2026',
     intro:
-      'Moba Universe is an unofficial fan-made website about MOBA games. We are not affiliated with or endorsed by Moonton Technology Co., Ltd. Materials are for educational and informational purposes for players.',
+      'Moba Universe is an unofficial fan-made website about MOBA games: a homepage, guides, and personal player pages. We are not affiliated with or endorsed by Moonton Technology Co., Ltd. Materials are for educational and informational purposes for players.',
     sections: [
       {
         title: 'Unofficial status',
@@ -91,7 +92,8 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
         title: 'Player profiles',
         paragraphs: [
           'Public profiles are created by users and reviewed before publication.',
-          'Ranks and games in profiles are self-reported. The Site does not verify game accounts and is not connected to game servers.',
+          'Ranks, roles 1–5, and games in profiles are self-reported. The Site does not verify game accounts and is not connected to game servers.',
+          'Search by name, games, and roles helps find players. Contact details (Telegram and other links) can be public or private. Private contacts are shared only after a request and the other party’s acceptance. Do not use contact exchange for spam, fraud, or illegal activity.',
         ],
       },
       {

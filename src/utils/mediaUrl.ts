@@ -18,3 +18,18 @@ export function absoluteMediaUrl(path?: string | null): string | null {
   if (!origin) return resolved
   return `${origin.replace(/\/$/, '')}${resolved}`
 }
+
+/** Small list thumbnail — never point at the original full-size cover. */
+export function resolveListCoverUrl(cover?: string | null, thumb?: string | null): string | null {
+  const explicit = resolveMediaUrl(thumb)
+  if (explicit) return explicit
+  const src = resolveMediaUrl(cover)
+  if (!src) return null
+  if (src.startsWith('/images/thumbs/')) return src
+  const local = src.match(/^\/images\/([^/]+)$/)
+  if (local) {
+    const stem = local[1].replace(/\.[^.]+$/, '')
+    return `/images/thumbs/${stem}.jpg`
+  }
+  return null
+}

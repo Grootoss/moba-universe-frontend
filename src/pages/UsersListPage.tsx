@@ -1,39 +1,52 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchPublicUsers } from '../api/users'
+import { fetchProfileOptions } from '../api/profile'
 import ErrorState from '../components/ErrorState'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { siteOrigin } from '../utils/prerender'
-import type { PublicProfile } from '../types/profile'
+import { gameLabel } from '../utils/gameLabels'
+import type { ProfileOptions, PublicProfile, RoleOption } from '../types/profile'
 
-const GAME_LABELS: Record<string, string> = {
-  mlbb: 'MLBB',
-  lol: 'LoL',
-  wildrift: 'Wild Rift',
-  dota2: 'Dota 2',
-  aov: 'AoV',
-  hok: 'Honor of Kings',
-  smite: 'Smite',
-}
-
-function formatRanks(profile: PublicProfile): string {
+function formatGames(profile: PublicProfile, options: ProfileOptions | null, lang: string): string {
   if (!profile.games.length) return '—'
   return profile.games
     .slice()
     .sort((a, b) => a.sort_order - b.sort_order)
-    .map((g) => `${GAME_LABELS[g.game] || g.game.toUpperCase()}: ${g.rank || '—'}`)
+    .map((g) => {
+      const roles = (g.roles || [])
+        .map((slug) => {
+          const opt = options?.roles?.[g.game]?.find((r) => r.slug === slug)
+          return roleName(opt, slug, lang)
+        })
+        .filter(Boolean)
+      const rolePart = roles.length ? ` (${roles.join(', ')})` : ''
+      return `${gameLabel(g.game)}: ${g.rank || '—'}${rolePart}`
+    })
     .join(' · ')
 }
 
+function roleName(opt: RoleOption | undefined, slug: string, lang: string): string {
+  if (!opt) return slug
+  return lang === 'ru' ? opt.name_ru : opt.name_en
+}
+
 export default function UsersListPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { lang = 'ru' } = useParams()
+  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const nameQuery = searchParams.get('q') ?? ''
+  const game = searchParams.get('game') ?? ''
+  const role = searchParams.get('role') ?? ''
 
   const [users, setUsers] = useState<PublicProfile[]>([])
-  const [loading, setLoading] = useState(true)
+  const [options, setOptions] = useState<ProfileOptions | null>(null)
+  const [listReady, setListReady] = useState(false)
   const [error, setError] = useState(false)
 
   const listSchema = useMemo(
@@ -50,42 +63,79 @@ export default function UsersListPage() {
 
   usePageTitle(t('usersTitle'), t('usersSubtitle'))
   useJsonLd(listSchema)
-  usePrerenderReady(!loading)
+  usePrerenderReady(listReady)
 
-  const load = async () => {
-    setLoading(true)
+  const roleOptions = game ? options?.roles?.[game] || [] : []
+
+  const patchSearch = (patch: { q?: string; game?: string; role?: string }) => {
+    const next = new URLSearchParams(searchParams)
+    const values = {
+      q: patch.q ?? nameQuery,
+      game: patch.game ?? game,
+      role: patch.role ?? role,
+    }
+    if (patch.game !== undefined && patch.game !== game) values.role = ''
+    for (const [key, value] of Object.entries(values)) {
+      const trimmed = value.trim()
+      if (trimmed) next.set(key, trimmed)
+      else next.delete(key)
+    }
+    setSearchParams(next, { replace: true })
+  }
+
+  const load = async (params?: { q?: string; game?: string; role?: string }) => {
     setError(false)
     try {
-      const data = await fetchPublicUsers()
+      const data = await fetchPublicUsers({
+        q: params?.q ?? nameQuery,
+        game: params?.game ?? game,
+        role: params?.role ?? role,
+      })
       setUsers(data)
     } catch {
       setError(true)
       setUsers([])
     } finally {
-      setLoading(false)
+      setListReady(true)
     }
   }
 
   useEffect(() => {
-    void load()
+    void fetchProfileOptions()
+      .then(setOptions)
+      .catch(() => setOptions(null))
   }, [])
 
-  if (loading) {
-    return (
-      <div className="page users-page">
-        <div className="state">{t('loading')}</div>
-      </div>
-    )
-  }
+  useEffect(() => {
+    let cancelled = false
+    setListReady(false)
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const data = await fetchPublicUsers({ q: nameQuery, game, role })
+          if (!cancelled) setUsers(data)
+        } catch {
+          if (!cancelled) {
+            setError(true)
+            setUsers([])
+          }
+        } finally {
+          if (!cancelled) setListReady(true)
+        }
+      })()
+    }, nameQuery.trim() ? 300 : 0)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [nameQuery, game, role])
 
-  if (error) {
+  if (error && !users.length && listReady) {
     return (
       <div className="page users-page">
         <ErrorState
           title={t('errorUsersTitle')}
           description={t('errorUsersText')}
-          actionLabel={t('notFoundAction')}
-          actionTo={`/${lang}/mlbb`}
           retryLabel={t('errorRetry')}
           onRetry={() => void load()}
         />
@@ -101,21 +151,71 @@ export default function UsersListPage() {
         <p className="page-header__subtitle">{t('usersSubtitle')}</p>
       </header>
 
-      {users.length ? (
+      <form
+        className="users-search"
+        onSubmit={(e) => {
+          e.preventDefault()
+          void load()
+        }}
+      >
+        <label className="admin-field">
+          <span>{t('usersSearchName')}</span>
+          <input
+            type="search"
+            value={nameQuery}
+            onChange={(e) => patchSearch({ q: e.target.value })}
+            placeholder={t('usersSearchNamePlaceholder')}
+            autoComplete="off"
+          />
+        </label>
+        <label className="admin-field">
+          <span>{t('usersSearchGame')}</span>
+          <select
+            value={game}
+            onChange={(e) => patchSearch({ game: e.target.value, role: '' })}
+          >
+            <option value="">{t('usersSearchAnyGame')}</option>
+            {(options?.games || []).map((g) => (
+              <option key={g.slug} value={g.slug}>
+                {i18n.language === 'ru' ? g.name_ru : g.name_en}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="admin-field">
+          <span>{t('usersSearchRole')}</span>
+          <select value={role} onChange={(e) => patchSearch({ role: e.target.value })} disabled={!game}>
+            <option value="">{t('usersSearchAnyRole')}</option>
+            {roleOptions.map((r) => (
+              <option key={r.slug} value={r.slug}>
+                {roleName(r, r.slug, i18n.language)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" className="btn btn--primary users-search__btn">
+          {t('usersSearchSubmit')}
+        </button>
+      </form>
+
+      {listReady && users.length ? (
         <ul className="users-list">
           {users.map((user) => (
             <li key={user.user_id}>
-              <Link to={`/${lang}/user/${user.user_id}`} className="users-list__row">
+              <Link
+                to={`/${lang}/user/${user.user_id}`}
+                state={{ usersSearch: location.search }}
+                className="users-list__row"
+              >
                 <span className="users-list__id">#{user.user_id}</span>
                 <span className="users-list__nick">{user.nickname}</span>
-                <span className="users-list__ranks">{formatRanks(user)}</span>
+                <span className="users-list__ranks">{formatGames(user, options, i18n.language)}</span>
               </Link>
             </li>
           ))}
         </ul>
-      ) : (
-        <p className="state">{t('usersEmpty')}</p>
-      )}
+      ) : null}
+      {listReady && !users.length ? <p className="state">{t('usersEmpty')}</p> : null}
     </div>
   )
 }

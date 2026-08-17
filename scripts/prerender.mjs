@@ -75,6 +75,7 @@ async function collectUserIds() {
 async function buildRoutes() {
   const routes = []
   for (const lang of LANGS) {
+    routes.push(`/${lang}`)
     routes.push(`/${lang}/evergreen`)
     routes.push(`/${lang}/users`)
     routes.push(`/${lang}/privacy`)

@@ -4,7 +4,7 @@ type Props = {
   title: string
   description: string
   code?: string
-  actionLabel: string
+  actionLabel?: string
   actionTo?: string
   retryLabel?: string
   onRetry?: () => void
@@ -19,21 +19,32 @@ export default function ErrorState({
   retryLabel,
   onRetry,
 }: Props) {
+  const showRetry = Boolean(retryLabel && onRetry)
+  const showAction = Boolean(actionLabel)
+
   return (
     <section className="error-state" role="alert">
       {code ? <p className="error-state__code">{code}</p> : null}
       <h1 className="error-state__title">{title}</h1>
       <p className="error-state__desc">{description}</p>
-      <div className="error-state__actions">
-        {retryLabel && onRetry ? (
-          <button type="button" className="error-state__btn error-state__btn--ghost" onClick={onRetry}>
-            {retryLabel}
-          </button>
-        ) : null}
-        <Link to={actionTo} className="error-state__btn error-state__btn--primary">
-          {actionLabel}
-        </Link>
-      </div>
+      {showRetry || showAction ? (
+        <div className="error-state__actions">
+          {showRetry ? (
+            <button
+              type="button"
+              className={`error-state__btn${showAction ? ' error-state__btn--ghost' : ' error-state__btn--primary'}`}
+              onClick={onRetry}
+            >
+              {retryLabel}
+            </button>
+          ) : null}
+          {showAction ? (
+            <Link to={actionTo} className="error-state__btn error-state__btn--primary">
+              {actionLabel}
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   )
 }

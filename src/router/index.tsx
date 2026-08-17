@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, useParams } from 'react-router-dom'
 import App from '../App'
+import HomePage from '../pages/HomePage'
 import ArticlesListPage from '../pages/ArticlesListPage'
 import ArticlePage from '../pages/ArticlePage'
 import LoginPage from '../pages/LoginPage'
@@ -38,12 +39,12 @@ export const router = createBrowserRouter([
   {
     element: <App />,
     children: [
-      { path: '/', element: <Navigate to={localizePath('/evergreen', getStoredLang())} replace /> },
+      { path: '/', element: <Navigate to={`/${getStoredLang()}`} replace /> },
       {
         path: '/:lang',
         element: <LangLayout />,
         children: [
-          { index: true, element: <Navigate to="evergreen" replace /> },
+          { index: true, element: <HomePage /> },
           { path: 'evergreen', element: <ArticlesListPage /> },
           { path: 'evergreen/:slug', element: <ArticlePage /> },
           { path: 'user/:id', element: <UserProfilePage /> },

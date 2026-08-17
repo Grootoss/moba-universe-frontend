@@ -2,6 +2,7 @@ import { authHeaders, refreshTokens } from './auth'
 import type {
   AdminProfile,
   OwnProfile,
+  ProfileContactsPayload,
   ProfileGamesPayload,
   ProfileOptions,
   ProfileUpdatePayload,
@@ -47,6 +48,16 @@ export async function updateOwnProfile(body: ProfileUpdatePayload): Promise<OwnP
 
 export async function updateOwnGames(body: ProfileGamesPayload): Promise<OwnProfile> {
   const res = await authFetch('/api/me/profile/games', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(await parseError(res))
+  return res.json()
+}
+
+export async function updateOwnContacts(body: ProfileContactsPayload): Promise<OwnProfile> {
+  const res = await authFetch('/api/me/profile/contacts', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

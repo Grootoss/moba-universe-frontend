@@ -33,6 +33,7 @@ export default function AdminArticleFormPage() {
   const [categorySlug, setCategorySlug] = useState('')
   const [status, setStatus] = useState('published')
   const [coverImage, setCoverImage] = useState('')
+  const [coverThumb, setCoverThumb] = useState('')
   const [titleRu, setTitleRu] = useState('')
   const [excerptRu, setExcerptRu] = useState('')
   const [contentRu, setContentRu] = useState('')
@@ -49,6 +50,7 @@ export default function AdminArticleFormPage() {
     category_slug: categorySlug || null,
     status,
     cover_image: coverImage.trim() || null,
+    cover_thumb: coverThumb.trim() || null,
     translations: {
       ru: {
         title: titleRu.trim(),
@@ -79,6 +81,7 @@ export default function AdminArticleFormPage() {
           setCategorySlug(a.category || '')
           setStatus(a.status)
           setCoverImage(a.cover_image || '')
+          setCoverThumb(a.cover_thumb || '')
           setTitleRu(a.title_ru || '')
           setExcerptRu(a.excerpt_ru || '')
           setContentRu(a.content_ru || '')
@@ -184,6 +187,15 @@ export default function AdminArticleFormPage() {
                   <img src={coverPreviewSrc} alt="" />
                 </figure>
               ) : null}
+            </label>
+            <label className="admin-field admin-field--wide">
+              <span>{t('adminArticleCoverThumb')}</span>
+              <input
+                type="text"
+                placeholder="/images/thumbs/roles-03.jpg"
+                value={coverThumb}
+                onChange={(e) => setCoverThumb(e.target.value)}
+              />
             </label>
           </div>
 

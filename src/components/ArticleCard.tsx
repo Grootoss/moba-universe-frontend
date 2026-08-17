@@ -1,23 +1,35 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useState } from 'react'
 import { formatArticleDate } from '../utils/formatDate'
-import { resolveMediaUrl } from '../utils/mediaUrl'
+import { resolveListCoverUrl } from '../utils/mediaUrl'
 
 type Props = {
   slug: string
   title: string
   excerpt?: string
   coverImage?: string | null
+  coverThumb?: string | null
   updatedAt?: string | null
   index: number
 }
 
-export default function ArticleCard({ slug, title, excerpt, coverImage, updatedAt, index }: Props) {
+export default function ArticleCard({
+  slug,
+  title,
+  excerpt,
+  coverImage,
+  coverThumb,
+  updatedAt,
+  index,
+}: Props) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { lang = i18n.language } = useParams()
+  const [thumbFailed, setThumbFailed] = useState(false)
 
   const updatedLabel = formatArticleDate(updatedAt, lang)
+  const coverSrc = thumbFailed ? null : resolveListCoverUrl(coverImage, coverThumb)
 
   const openArticle = () => {
     void navigate(`/${lang}/evergreen/${slug}`)
@@ -30,8 +42,6 @@ export default function ArticleCard({ slug, title, excerpt, coverImage, updatedA
     }
   }
 
-  const coverSrc = resolveMediaUrl(coverImage)
-
   return (
     <article
       className="article-card"
@@ -43,7 +53,15 @@ export default function ArticleCard({ slug, title, excerpt, coverImage, updatedA
     >
       {coverSrc ? (
         <div className="article-card__cover">
-          <img src={coverSrc} alt={title} loading="lazy" />
+          <img
+            src={coverSrc}
+            alt=""
+            width={224}
+            height={126}
+            loading="lazy"
+            decoding="async"
+            onError={() => setThumbFailed(true)}
+          />
         </div>
       ) : (
         <span className="article-card__num" aria-hidden="true">

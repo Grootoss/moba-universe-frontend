@@ -10,6 +10,7 @@ export const MLBB_CATEGORY: ArticleCategory = {
 
 /** MLBB last; inject if API has not migrated yet. */
 export function ensureArticleCategories(categories: ArticleCategory[]): ArticleCategory[] {
+  if (!categories.length) return []
   const hasMlbb = categories.some((c) => c.slug === MLBB_CATEGORY_SLUG)
   const merged = hasMlbb ? categories : [...categories, MLBB_CATEGORY]
   const rest = merged.filter((c) => c.slug !== MLBB_CATEGORY_SLUG)

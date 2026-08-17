@@ -7,6 +7,41 @@ import ThemeToggle from './ThemeToggle'
 import { useMobileMenu } from '../hooks/useMobileMenu'
 import { fetchMe, getAccessToken } from '../api/auth'
 
+function LoginIcon() {
+  return (
+    <svg className="theme-toggle__svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M10 17l5-5-5-5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M15 12H4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <path
+        d="M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function UserIcon() {
+  return (
+    <svg className="theme-toggle__svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.75" />
+      <path
+        d="M5.5 19.25c.9-3.1 3.4-4.75 6.5-4.75s5.6 1.65 6.5 4.75"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 export default function AppHeader() {
   const { t } = useTranslation()
   const { lang = 'ru' } = useParams()
@@ -21,7 +56,7 @@ export default function AppHeader() {
   }, [])
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
-    `header__auth-link${isActive ? ' router-link-active' : ''}`
+    `header__nav-link${isActive ? ' router-link-active' : ''}`
 
   const mobileNavClass = ({ isActive }: { isActive: boolean }) =>
     `mobile-menu__link${isActive ? ' router-link-active' : ''}`
@@ -29,27 +64,34 @@ export default function AppHeader() {
   return (
     <header className="header">
       <div className="header__inner container container--wide">
-        <Link to={`/${lang}/evergreen`} className="logo" onClick={close}>
-          <span className="logo__prefix">{t('logoPrefix')}</span>
-          <span className="logo__suffix">{t('logoSuffix')}</span>
-        </Link>
+        <div className="header__brand">
+          <Link to={`/${lang}`} className="logo" onClick={close}>
+            <span className="logo__prefix">{t('logoPrefix')}</span>
+            <span className="logo__suffix">{t('logoSuffix')}</span>
+          </Link>
+          <nav className="header__nav" aria-label="Main">
+            <NavLink to={`/${lang}/evergreen`} className={navClass} onClick={close}>
+              {t('navGuides')}
+            </NavLink>
+            <NavLink to={`/${lang}/users`} className={navClass} onClick={close}>
+              {t('navUsers')}
+            </NavLink>
+          </nav>
+        </div>
 
-        <nav className="header__controls header__controls--desktop" aria-label="Main">
-          <NavLink to={`/${lang}/users`} className={navClass}>
-            {t('navUsers')}
-          </NavLink>
+        <div className="header__controls header__controls--desktop">
           {isLoggedIn ? (
-            <NavLink to={`/${lang}/profile`} className={navClass}>
-              {t('navCabinet')}
+            <NavLink to={`/${lang}/profile`} className="header__icon-btn" aria-label={t('navCabinet')}>
+              <UserIcon />
             </NavLink>
           ) : (
-            <NavLink to={`/${lang}/login`} className={navClass}>
-              {t('navLogin')}
+            <NavLink to={`/${lang}/login`} className="header__icon-btn" aria-label={t('navLogin')}>
+              <LoginIcon />
             </NavLink>
           )}
           <LangSwitch />
           <ThemeToggle />
-        </nav>
+        </div>
 
         <button
           type="button"
@@ -81,6 +123,9 @@ export default function AppHeader() {
             </div>
 
             <nav className="mobile-menu__nav">
+              <NavLink to={`/${lang}`} className={mobileNavClass} onClick={close} end>
+                {t('navHome')}
+              </NavLink>
               <NavLink to={`/${lang}/evergreen`} className={mobileNavClass} onClick={close}>
                 {t('navGuides')}
               </NavLink>

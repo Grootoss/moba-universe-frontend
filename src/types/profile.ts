@@ -3,7 +3,14 @@
 export interface GameRank {
   game: 'mlbb' | 'lol' | string
   rank: string
+  roles?: string[]
   sort_order: number
+}
+
+export interface SocialContact {
+  label: string
+  url: string
+  is_public: boolean
 }
 
 export interface PublicProfile {
@@ -13,9 +20,11 @@ export interface PublicProfile {
   bio: string
   telegram_url: string | null
   social_links: Record<string, string>
+  contacts?: SocialContact[]
   games: GameRank[]
   moderation_status?: string | null
   is_public?: boolean | null
+  contact_status?: string | null
 }
 
 export interface OwnProfile extends PublicProfile {
@@ -59,9 +68,35 @@ export interface ProfileGamesPayload {
   games: GameRank[]
 }
 
+export interface ProfileContactsPayload {
+  contacts: SocialContact[]
+}
+
+export interface RoleOption {
+  slug: string
+  number: number
+  name_ru: string
+  name_en: string
+}
+
 export interface ProfileOptions {
   games: { slug: string; name_ru: string; name_en: string }[]
   ranks: Record<string, string[]>
+  roles?: Record<string, RoleOption[]>
+}
+
+export interface ContactItem {
+  request_id: number
+  user_id: number
+  nickname: string
+  direction: 'incoming' | 'outgoing' | string
+  status: string
+  contacts: SocialContact[] | null
+}
+
+export interface ContactsList {
+  incoming: ContactItem[]
+  outgoing: ContactItem[]
 }
 
 export interface AdminArticle {
@@ -70,6 +105,7 @@ export interface AdminArticle {
   status: string
   category: string | null
   cover_image?: string | null
+  cover_thumb?: string | null
   title_ru: string | null
   title_en: string | null
   excerpt_ru?: string | null
@@ -91,6 +127,7 @@ export interface ArticleFormPayload {
   category_slug: string | null
   status: string
   cover_image?: string | null
+  cover_thumb?: string | null
   translations: {
     ru: { title: string; excerpt: string; content: string; mlbb_example: string }
     en: { title: string; excerpt: string; content: string; mlbb_example: string }
