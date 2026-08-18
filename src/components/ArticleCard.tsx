@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
+import FadeImage from './FadeImage'
 import { formatArticleDate } from '../utils/formatDate'
 import { resolveListCoverUrl } from '../utils/mediaUrl'
 
@@ -53,13 +54,12 @@ export default function ArticleCard({
     >
       {coverSrc ? (
         <div className="article-card__cover">
-          <img
+          <FadeImage
             src={coverSrc}
-            alt=""
             width={224}
             height={126}
-            loading="lazy"
-            decoding="async"
+            loading={index < 12 ? 'eager' : 'lazy'}
+            fetchPriority={index < 4 ? 'high' : 'auto'}
             onError={() => setThumbFailed(true)}
           />
         </div>

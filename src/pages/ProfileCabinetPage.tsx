@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clearTokens, fetchMe, getAccessToken } from '../api/auth'
-import { acceptContact, fetchMyContacts } from '../api/contacts'
+import { fetchMyContacts } from '../api/contacts'
 import {
   cancelOwnProfile,
   fetchOwnProfile,
@@ -13,8 +13,10 @@ import {
   updateOwnProfile,
 } from '../api/profile'
 import ContactModal from '../components/ContactModal'
+import ContactRequestActions from '../components/ContactRequestActions'
 import type { AuthUser, ContactItem, OwnProfile, ProfileOptions, SocialContact } from '../types/profile'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { rolesForGame } from '../utils/gameRoles'
 
 type GameRow = { game: string; rank: string; roles: string[]; sort_order: number }
 type ContactRow = { label: string; url: string; is_public: boolean }
@@ -43,8 +45,8 @@ export default function ProfileCabinetPage() {
   const [savingText, setSavingText] = useState(false)
   const [savingGames, setSavingGames] = useState(false)
   const [savingContacts, setSavingContacts] = useState(false)
-  const [gamesSavedOk, setGamesSavedOk] = useState(false)
-  const [contactsSavedOk, setContactsSavedOk] = useState(false)
+  const [gamesNotice, setGamesNotice] = useState('')
+  const [contactsNotice, setContactsNotice] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [nickname, setNickname] = useState('')
@@ -75,18 +77,29 @@ export default function ProfileCabinetPage() {
     return s || ''
   }, [profile, t])
 
-  const applyProfile = (p: OwnProfile) => {
+  const applyProfile = (
+    p: OwnProfile,
+    opts: ProfileOptions | null = options,
+    mode: { keepGames?: boolean } = {},
+  ) => {
     setProfile(p)
     setNickname(p.nickname || '')
     setBio(p.bio || '')
-    setGames(
-      (Array.isArray(p.games) ? p.games : []).map((g, i) => ({
+    if (!mode.keepGames) {
+      const mapped = (Array.isArray(p.games) ? p.games : []).map((g, i) => ({
         game: g.game,
         rank: g.rank,
-        roles: Array.isArray(g.roles) ? g.roles : [],
+        roles: Array.isArray(g.roles) ? g.roles.map(String) : [],
         sort_order: g.sort_order ?? i,
-      })),
-    )
+      }))
+      if (mapped.length) {
+        setGames(mapped)
+      } else {
+        const first = opts?.games[0]
+        const ranks = first ? opts?.ranks[first.slug] || [] : []
+        setGames(first ? [{ game: first.slug, rank: ranks[0] || '', roles: [], sort_order: 0 }] : [])
+      }
+    }
     setContactRows(emptyContacts(p.contacts))
   }
 
@@ -97,12 +110,7 @@ export default function ProfileCabinetPage() {
   }
 
   const ranksFor = (game: string) => options?.ranks[game] || []
-  const rolesFor = (game: string) => options?.roles?.[game] || []
-  const roleLabel = (game: string, slug: string) => {
-    const opt = rolesFor(game).find((r) => r.slug === slug)
-    if (!opt) return slug
-    return i18n.language === 'ru' ? opt.name_ru : opt.name_en
-  }
+  const rolesFor = (game: string) => rolesForGame(game, options)
 
   const load = async () => {
     setLoading(true)
@@ -114,7 +122,7 @@ export default function ProfileCabinetPage() {
         fetchMyContacts().catch(() => ({ incoming: [], outgoing: [] })),
       ])
       setOptions(opts)
-      applyProfile(own)
+      applyProfile(own, opts)
       setInbox(contacts)
     } catch (e) {
       setProfile(null)
@@ -160,7 +168,7 @@ export default function ProfileCabinetPage() {
 
   const onSaveGames = async () => {
     setSavingGames(true)
-    setGamesSavedOk(false)
+    setGamesNotice('')
     setError('')
     setSuccess('')
     try {
@@ -169,12 +177,13 @@ export default function ProfileCabinetPage() {
           games: games.map((g, i) => ({
             game: g.game,
             rank: g.rank,
-            roles: g.roles,
+            roles: g.roles.map(String),
             sort_order: i,
           })),
         }),
+        options,
       )
-      setGamesSavedOk(true)
+      setGamesNotice(t('cabinetGamesSaved'))
     } catch (e) {
       setError(e instanceof Error ? e.message : t('adminSaveError'))
     } finally {
@@ -184,15 +193,15 @@ export default function ProfileCabinetPage() {
 
   const onSaveContacts = async () => {
     setSavingContacts(true)
-    setContactsSavedOk(false)
+    setContactsNotice('')
     setError('')
     setSuccess('')
     try {
       const contacts = contactRows
         .filter((c) => c.url.trim())
         .map((c) => ({ label: c.label.trim() || 'Telegram', url: c.url.trim(), is_public: c.is_public }))
-      applyProfile(await updateOwnContacts({ contacts }))
-      setContactsSavedOk(true)
+      applyProfile(await updateOwnContacts({ contacts }), options, { keepGames: true })
+      setContactsNotice(t('cabinetContactsSaved'))
     } catch (e) {
       setError(e instanceof Error ? e.message : t('adminSaveError'))
     } finally {
@@ -223,23 +232,24 @@ export default function ProfileCabinetPage() {
       ...prev,
       { game: next.slug, rank: ranks[0] || '', roles: [], sort_order: prev.length },
     ])
-    setGamesSavedOk(false)
+    setGamesNotice('')
   }
 
   const removeGame = (index: number) => {
     setGames((prev) => prev.filter((_, i) => i !== index).map((g, i) => ({ ...g, sort_order: i })))
-    setGamesSavedOk(false)
+    setGamesNotice('')
   }
 
   const toggleRole = (index: number, slug: string) => {
     setGames((prev) =>
       prev.map((row, i) => {
         if (i !== index) return row
-        const has = row.roles.includes(slug)
-        return { ...row, roles: has ? row.roles.filter((r) => r !== slug) : [...row.roles, slug] }
+        const key = String(slug)
+        const has = row.roles.map(String).includes(key)
+        return { ...row, roles: has ? row.roles.filter((r) => String(r) !== key) : [...row.roles, key] }
       }),
     )
-    setGamesSavedOk(false)
+    setGamesNotice('')
   }
 
   const logout = () => {
@@ -372,62 +382,73 @@ export default function ProfileCabinetPage() {
             <div className="cabinet__form">
               <div className="cabinet__games">
                 {games.map((g, index) => (
-                  <div key={index} className="cabinet__game-row">
-                    <label className="admin-field">
-                      <span>{t('cabinetGame')}</span>
-                      <select
-                        value={g.game}
-                        onChange={(e) => {
-                          const game = e.target.value
-                          const rank = ranksFor(game)[0] || ''
-                          setGames((prev) =>
-                            prev.map((row, i) => (i === index ? { ...row, game, rank, roles: [] } : row)),
-                          )
-                          setGamesSavedOk(false)
-                        }}
-                      >
-                        {(options?.games || []).map((opt) => (
-                          <option key={opt.slug} value={opt.slug}>
-                            {gameName(opt.slug)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="admin-field">
-                      <span>{t('cabinetRank')}</span>
-                      <select
-                        value={g.rank}
-                        onChange={(e) => {
-                          const rank = e.target.value
-                          setGames((prev) => prev.map((row, i) => (i === index ? { ...row, rank } : row)))
-                          setGamesSavedOk(false)
-                        }}
-                      >
-                        {ranksFor(g.game).map((r) => (
-                          <option key={r} value={r}>
-                            {r}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <fieldset className="admin-field cabinet__roles">
-                      <legend>{t('cabinetRoles')}</legend>
+                  <div key={`${g.game}-${index}`} className="cabinet__game-row">
+                    <div className="cabinet__game-row-main">
+                      <label className="admin-field">
+                        <span>{t('cabinetGame')}</span>
+                        <select
+                          value={g.game}
+                          onChange={(e) => {
+                            const game = e.target.value
+                            const rank = ranksFor(game)[0] || ''
+                            setGames((prev) =>
+                              prev.map((row, i) => (i === index ? { ...row, game, rank, roles: [] } : row)),
+                            )
+                            setGamesNotice('')
+                          }}
+                        >
+                          {(options?.games || [])
+                            .filter(
+                              (opt) =>
+                                opt.slug === g.game || !games.some((row, i) => i !== index && row.game === opt.slug),
+                            )
+                            .map((opt) => (
+                            <option key={opt.slug} value={opt.slug}>
+                              {gameName(opt.slug)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="admin-field">
+                        <span>{t('cabinetRank')}</span>
+                        <select
+                          value={g.rank}
+                          onChange={(e) => {
+                            const rank = e.target.value
+                            setGames((prev) => prev.map((row, i) => (i === index ? { ...row, rank } : row)))
+                            setGamesNotice('')
+                          }}
+                        >
+                          {ranksFor(g.game).map((r) => (
+                            <option key={r} value={r}>
+                              {r}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <button type="button" className="admin-btn admin-btn--ghost" onClick={() => removeGame(index)}>
+                        {t('cabinetRemoveGame')}
+                      </button>
+                    </div>
+                    <div className="cabinet__roles">
+                      <span className="cabinet__roles-label">{t('cabinetRoles')}</span>
                       <div className="cabinet__roles-list">
-                        {rolesFor(g.game).map((role) => (
-                          <label key={role.slug} className="cabinet__role">
-                            <input
-                              type="checkbox"
-                              checked={g.roles.includes(role.slug)}
-                              onChange={() => toggleRole(index, role.slug)}
-                            />
-                            <span>{i18n.language === 'ru' ? role.name_ru : role.name_en}</span>
-                          </label>
-                        ))}
+                        {rolesFor(g.game).map((role) => {
+                          const on = g.roles.map(String).includes(String(role.slug))
+                          return (
+                            <button
+                              key={role.slug}
+                              type="button"
+                              className={`cabinet__role-chip${on ? ' is-on' : ''}`}
+                              aria-pressed={on}
+                              onClick={() => toggleRole(index, String(role.slug))}
+                            >
+                              {i18n.language === 'ru' ? role.name_ru : role.name_en}
+                            </button>
+                          )
+                        })}
                       </div>
-                    </fieldset>
-                    <button type="button" className="admin-btn admin-btn--ghost" onClick={() => removeGame(index)}>
-                      {t('cabinetRemoveGame')}
-                    </button>
+                    </div>
                   </div>
                 ))}
                 {games.length < (options?.games.length || 0) ? (
@@ -437,15 +458,15 @@ export default function ProfileCabinetPage() {
                 ) : null}
               </div>
               <div className="cabinet__actions">
-                <button
-                  type="button"
-                  className={`admin-btn${gamesSavedOk ? ' cabinet__save-btn--ok' : ''}`}
-                  disabled={savingGames || gamesSavedOk}
-                  onClick={() => void onSaveGames()}
-                >
-                  {savingGames ? t('loading') : gamesSavedOk ? t('cabinetSaved') : t('cabinetSaveGames')}
+                <button type="button" className="admin-btn" disabled={savingGames} onClick={() => void onSaveGames()}>
+                  {savingGames ? t('loading') : t('cabinetSaveGames')}
                 </button>
               </div>
+              {gamesNotice ? (
+                <p className="cabinet__notice" role="status" aria-live="polite">
+                  {gamesNotice}
+                </p>
+              ) : null}
             </div>
           </section>
 
@@ -462,7 +483,7 @@ export default function ProfileCabinetPage() {
                       onChange={(e) => {
                         const label = e.target.value
                         setContactRows((prev) => prev.map((r, i) => (i === index ? { ...r, label } : r)))
-                        setContactsSavedOk(false)
+                        setContactsNotice('')
                       }}
                     >
                       {CONTACT_PRESETS.map((label) => (
@@ -481,7 +502,7 @@ export default function ProfileCabinetPage() {
                       onChange={(e) => {
                         const url = e.target.value
                         setContactRows((prev) => prev.map((r, i) => (i === index ? { ...r, url } : r)))
-                        setContactsSavedOk(false)
+                        setContactsNotice('')
                       }}
                     />
                   </label>
@@ -492,7 +513,7 @@ export default function ProfileCabinetPage() {
                       onChange={(e) => {
                         const is_public = e.target.checked
                         setContactRows((prev) => prev.map((r, i) => (i === index ? { ...r, is_public } : r)))
-                        setContactsSavedOk(false)
+                        setContactsNotice('')
                       }}
                     />
                     <span>{row.is_public ? t('cabinetContactPublic') : t('cabinetContactPrivate')}</span>
@@ -500,15 +521,15 @@ export default function ProfileCabinetPage() {
                 </div>
               ))}
               <div className="cabinet__actions">
-                <button
-                  type="button"
-                  className={`admin-btn${contactsSavedOk ? ' cabinet__save-btn--ok' : ''}`}
-                  disabled={savingContacts || contactsSavedOk}
-                  onClick={() => void onSaveContacts()}
-                >
-                  {savingContacts ? t('loading') : contactsSavedOk ? t('cabinetSaved') : t('cabinetSaveContacts')}
+                <button type="button" className="admin-btn" disabled={savingContacts} onClick={() => void onSaveContacts()}>
+                  {savingContacts ? t('loading') : t('cabinetSaveContacts')}
                 </button>
               </div>
+              {contactsNotice ? (
+                <p className="cabinet__notice" role="status" aria-live="polite">
+                  {contactsNotice}
+                </p>
+              ) : null}
             </div>
           </section>
 
@@ -525,19 +546,16 @@ export default function ProfileCabinetPage() {
                         <button type="button" className="contacts-list__btn" onClick={() => setModalItem(item)}>
                           {item.nickname}
                         </button>
-                        {item.status === 'pending' ? (
-                          <button
-                            type="button"
-                            className="admin-btn"
-                            onClick={() => {
-                              void acceptContact(item.request_id).then(async () => {
-                                setInbox(await fetchMyContacts())
-                              })
-                            }}
-                          >
-                            {t('contactsAccept')}
-                          </button>
-                        ) : null}
+                        <ContactRequestActions
+                          item={item}
+                          onUpdated={async (next, action) => {
+                            setInbox(await fetchMyContacts())
+                            if (action === 'accept') {
+                              setModalItem(next)
+                              setContactsNotice(t('contactsSentOk'))
+                            }
+                          }}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -554,6 +572,11 @@ export default function ProfileCabinetPage() {
                         <button type="button" className="contacts-list__btn" onClick={() => setModalItem(item)}>
                           {item.nickname}
                         </button>
+                        {item.status === 'declined' ? (
+                          <span className="contacts-list__status">{t('contactsDeclined')}</span>
+                        ) : item.status === 'pending' ? (
+                          <span className="contacts-list__status">{t('contactsPendingOut')}</span>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
@@ -571,7 +594,13 @@ export default function ProfileCabinetPage() {
           title={t('contactsModalTitle')}
           nickname={modalItem.nickname}
           contacts={modalItem.status === 'accepted' ? modalItem.contacts : null}
-          emptyText={modalItem.status === 'accepted' ? t('contactsModalEmpty') : t('contactsPendingOut')}
+          emptyText={
+            modalItem.status === 'accepted'
+              ? t('contactsModalEmpty')
+              : modalItem.status === 'declined'
+                ? t('contactsDeclined')
+                : t('contactsPendingOut')
+          }
           closeLabel={t('menuClose')}
           onClose={() => setModalItem(null)}
         />

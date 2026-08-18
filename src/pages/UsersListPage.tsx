@@ -9,7 +9,8 @@ import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { siteOrigin } from '../utils/prerender'
 import { gameLabel } from '../utils/gameLabels'
-import type { ProfileOptions, PublicProfile, RoleOption } from '../types/profile'
+import { GENERIC_ROLES, roleLabel, rolesForGame } from '../utils/gameRoles'
+import type { ProfileOptions, PublicProfile } from '../types/profile'
 
 function formatGames(profile: PublicProfile, options: ProfileOptions | null, lang: string): string {
   if (!profile.games.length) return '—'
@@ -17,21 +18,11 @@ function formatGames(profile: PublicProfile, options: ProfileOptions | null, lan
     .slice()
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((g) => {
-      const roles = (g.roles || [])
-        .map((slug) => {
-          const opt = options?.roles?.[g.game]?.find((r) => r.slug === slug)
-          return roleName(opt, slug, lang)
-        })
-        .filter(Boolean)
+      const roles = (g.roles || []).map((slug) => roleLabel(g.game, String(slug), lang, options)).filter(Boolean)
       const rolePart = roles.length ? ` (${roles.join(', ')})` : ''
       return `${gameLabel(g.game)}: ${g.rank || '—'}${rolePart}`
     })
     .join(' · ')
-}
-
-function roleName(opt: RoleOption | undefined, slug: string, lang: string): string {
-  if (!opt) return slug
-  return lang === 'ru' ? opt.name_ru : opt.name_en
 }
 
 export default function UsersListPage() {
@@ -65,7 +56,7 @@ export default function UsersListPage() {
   useJsonLd(listSchema)
   usePrerenderReady(listReady)
 
-  const roleOptions = game ? options?.roles?.[game] || [] : []
+  const roleOptions = game ? rolesForGame(game, options) : GENERIC_ROLES
 
   const patchSearch = (patch: { q?: string; game?: string; role?: string }) => {
     const next = new URLSearchParams(searchParams)
@@ -184,11 +175,11 @@ export default function UsersListPage() {
         </label>
         <label className="admin-field">
           <span>{t('usersSearchRole')}</span>
-          <select value={role} onChange={(e) => patchSearch({ role: e.target.value })} disabled={!game}>
+          <select value={role} onChange={(e) => patchSearch({ role: e.target.value })}>
             <option value="">{t('usersSearchAnyRole')}</option>
             {roleOptions.map((r) => (
               <option key={r.slug} value={r.slug}>
-                {roleName(r, r.slug, i18n.language)}
+                {i18n.language === 'ru' ? r.name_ru : r.name_en}
               </option>
             ))}
           </select>

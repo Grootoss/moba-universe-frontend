@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchArticle, fetchArticlesPage } from '../api/articles'
 import ErrorState from '../components/ErrorState'
+import FadeImage from '../components/FadeImage'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
@@ -132,12 +133,12 @@ export default function ArticlePage() {
           ) : null}
           {coverSrc ? (
             <figure className="article__cover">
-              <img
+              <FadeImage
                 src={coverSrc}
                 alt={translation.title}
                 width={1200}
                 height={675}
-                decoding="async"
+                loading="eager"
                 fetchPriority="high"
               />
             </figure>

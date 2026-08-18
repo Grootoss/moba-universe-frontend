@@ -3,15 +3,17 @@ import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'reac
 import { useTranslation } from 'react-i18next'
 import { fetchPublicProfile } from '../api/admin'
 import { fetchMe, getAccessToken } from '../api/auth'
-import { acceptContact, fetchMyContacts, requestUserContact } from '../api/contacts'
+import { fetchMyContacts, requestUserContact } from '../api/contacts'
 import { fetchProfileOptions } from '../api/profile'
 import ContactModal from '../components/ContactModal'
+import ContactRequestActions from '../components/ContactRequestActions'
 import ErrorState from '../components/ErrorState'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { siteOrigin } from '../utils/prerender'
 import { gameLabel } from '../utils/gameLabels'
+import { roleLabel as roleNameFor } from '../utils/gameRoles'
 import type { ContactItem, ProfileOptions, PublicProfile, SocialContact } from '../types/profile'
 
 function safeHttpUrl(url: string | null | undefined): string | null {
@@ -142,11 +144,7 @@ export default function UserProfilePage() {
     }
   }
 
-  const onAccept = async (requestId: number) => {
-    const item = await acceptContact(requestId)
-    setInbox(await fetchMyContacts())
-    setModalItem(item)
-  }
+  const pendingIncoming = inbox.incoming.find((item) => item.user_id === userId && item.status === 'pending')
 
   if (loading) {
     return (
@@ -172,11 +170,7 @@ export default function UserProfilePage() {
   }
 
   const links = publicContacts(profile)
-  const roleLabel = (game: string, slug: string) => {
-    const opt = options?.roles?.[game]?.find((r) => r.slug === slug)
-    if (!opt) return slug
-    return i18n.language === 'ru' ? opt.name_ru : opt.name_en
-  }
+  const roleLabel = (game: string, slug: string) => roleNameFor(game, String(slug), i18n.language, options)
 
   return (
     <div className="page profile-page">
@@ -238,7 +232,23 @@ export default function UserProfilePage() {
           ) : status === 'pending_out' ? (
             <p className="cabinet__banner cabinet__banner--pending">{t('contactsPendingOut')}</p>
           ) : status === 'pending_in' ? (
-            <p className="cabinet__banner cabinet__banner--pending">{t('contactsPendingIn')}</p>
+            <div className="profile-request__incoming">
+              <p className="cabinet__banner cabinet__banner--pending">{t('contactsPendingIn')}</p>
+              {pendingIncoming ? (
+                <ContactRequestActions
+                  item={pendingIncoming}
+                  onUpdated={async (next, action) => {
+                    setInbox(await fetchMyContacts())
+                    if (action === 'accept') {
+                      setProfile((prev) => (prev ? { ...prev, contact_status: 'accepted' } : prev))
+                      setModalItem(next)
+                    } else {
+                      setProfile((prev) => (prev ? { ...prev, contact_status: 'none' } : prev))
+                    }
+                  }}
+                />
+              ) : null}
+            </div>
           ) : (
             <button type="button" className="admin-btn" disabled={requesting} onClick={() => void onRequest()}>
               {t('contactsRequest')}
@@ -263,9 +273,13 @@ export default function UserProfilePage() {
                         {item.nickname}
                       </button>
                       {item.status === 'pending' ? (
-                        <button type="button" className="admin-btn" onClick={() => void onAccept(item.request_id)}>
-                          {t('contactsAccept')}
-                        </button>
+                        <ContactRequestActions
+                          item={item}
+                          onUpdated={async (next, action) => {
+                            setInbox(await fetchMyContacts())
+                            if (action === 'accept') setModalItem(next)
+                          }}
+                        />
                       ) : null}
                     </li>
                   ))}
@@ -279,11 +293,16 @@ export default function UserProfilePage() {
               {inbox.outgoing.length ? (
                 <ul className="contacts-list">
                   {inbox.outgoing.map((item) => (
-                    <li key={item.request_id}>
-                      <button type="button" className="contacts-list__btn" onClick={() => setModalItem(item)}>
-                        {item.nickname}
-                      </button>
-                    </li>
+                      <li key={item.request_id}>
+                        <button type="button" className="contacts-list__btn" onClick={() => setModalItem(item)}>
+                          {item.nickname}
+                        </button>
+                        {item.status === 'declined' ? (
+                          <span className="contacts-list__status">{t('contactsDeclined')}</span>
+                        ) : item.status === 'pending' ? (
+                          <span className="contacts-list__status">{t('contactsPendingOut')}</span>
+                        ) : null}
+                      </li>
                   ))}
                 </ul>
               ) : (
