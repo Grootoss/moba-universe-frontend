@@ -16,7 +16,7 @@ import ContactModal from '../components/ContactModal'
 import ContactRequestActions from '../components/ContactRequestActions'
 import type { AuthUser, ContactItem, OwnProfile, ProfileOptions, SocialContact } from '../types/profile'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { rolesForGame } from '../utils/gameRoles'
+import { roleLabel, rolesForGame } from '../utils/gameRoles'
 
 type GameRow = { game: string; rank: string; roles: string[]; sort_order: number }
 type ContactRow = { label: string; url: string; is_public: boolean }
@@ -311,7 +311,7 @@ export default function ProfileCabinetPage() {
                   {games.map((g) => (
                     <li key={`${g.game}-${g.rank}`}>
                       {gameName(g.game)}: {g.rank || '—'}
-                      {g.roles.length ? ` · ${g.roles.map((r) => roleLabel(g.game, r)).join(', ')}` : ''}
+                      {g.roles.length ? ` · ${g.roles.map((r) => roleLabel(g.game, r, i18n.language, options)).join(', ')}` : ''}
                     </li>
                   ))}
                 </ul>
