@@ -1743,20 +1743,16 @@ body.has-cookie-banner {
 }
 
 .users-list__ranks {
-  flex: 1 1 100%;
+  flex: 1 1 auto;
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.75rem 1.25rem;
+  min-width: 0;
   font-size: 0.875rem;
   color: var(--text-muted);
   line-height: 1.45;
-}
-
-@media (min-width: 640px) {
-  .users-list__ranks {
-    flex: 1 1 auto;
-    text-align: right;
-  }
+  text-align: right;
 }
 
 /* ── Admin layout ── */
@@ -2551,6 +2547,15 @@ body.has-cookie-banner {
 .users-list__game {
   display: grid;
   gap: 0.15rem;
+  justify-items: end;
+}
+
+.users-list__game-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 0.35rem 0.55rem;
 }
 
 .users-list__game-name {
@@ -2558,6 +2563,14 @@ body.has-cookie-banner {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-faint);
+}
+
+.users-list__game-rank {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .users-list__game-roles {

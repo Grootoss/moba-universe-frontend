@@ -19,6 +19,7 @@ export default function UsersListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const nameQuery = searchParams.get('q') ?? ''
+  const [nameInput, setNameInput] = useState(nameQuery)
 
   const [users, setUsers] = useState<PublicProfile[]>([])
   const [options, setOptions] = useState<ProfileOptions | null>(null)
@@ -41,10 +42,12 @@ export default function UsersListPage() {
   useJsonLd(listSchema)
   usePrerenderReady(listReady)
 
-  const patchSearch = (q: string) => {
+  const commitSearch = (raw: string) => {
+    const trimmed = raw.trim()
     const next = new URLSearchParams()
-    const trimmed = q.trim()
     if (trimmed) next.set('q', trimmed)
+    const current = (searchParams.get('q') ?? '').trim()
+    if (trimmed === current) return
     setSearchParams(next, { replace: true })
   }
 
@@ -62,32 +65,41 @@ export default function UsersListPage() {
   }
 
   useEffect(() => {
+    setNameInput(nameQuery)
+  }, [nameQuery])
+
+  useEffect(() => {
     void fetchProfileOptions()
       .then(setOptions)
       .catch(() => setOptions(null))
   }, [])
 
   useEffect(() => {
+    const timer = window.setTimeout(() => commitSearch(nameInput), nameInput.trim() ? 300 : 0)
+    return () => window.clearTimeout(timer)
+  }, [nameInput])
+
+  useEffect(() => {
     let cancelled = false
     setListReady(false)
-    const timer = window.setTimeout(() => {
-      void (async () => {
-        try {
-          const data = await fetchPublicUsers({ q: nameQuery })
-          if (!cancelled) setUsers(data)
-        } catch {
-          if (!cancelled) {
-            setError(true)
-            setUsers([])
-          }
-        } finally {
-          if (!cancelled) setListReady(true)
+    void (async () => {
+      try {
+        const data = await fetchPublicUsers({ q: nameQuery })
+        if (!cancelled) {
+          setError(false)
+          setUsers(data)
         }
-      })()
-    }, nameQuery.trim() ? 300 : 0)
+      } catch {
+        if (!cancelled) {
+          setError(true)
+          setUsers([])
+        }
+      } finally {
+        if (!cancelled) setListReady(true)
+      }
+    })()
     return () => {
       cancelled = true
-      window.clearTimeout(timer)
     }
   }, [nameQuery])
 
@@ -116,15 +128,16 @@ export default function UsersListPage() {
         className="users-search"
         onSubmit={(e) => {
           e.preventDefault()
-          void load()
+          commitSearch(nameInput)
+          void load(nameInput)
         }}
       >
         <label className="admin-field">
           <span>{t('usersSearchName')}</span>
           <input
             type="search"
-            value={nameQuery}
-            onChange={(e) => patchSearch(e.target.value)}
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
             placeholder={t('usersSearchNamePlaceholder')}
             autoComplete="off"
           />
@@ -156,7 +169,10 @@ export default function UsersListPage() {
                             .filter(Boolean)
                           return (
                             <span key={g.game} className="users-list__game">
-                              <span className="users-list__game-name">{gameLabel(g.game)}</span>
+                              <span className="users-list__game-head">
+                                <span className="users-list__game-name">{gameLabel(g.game)}</span>
+                                {g.rank ? <span className="users-list__game-rank">{g.rank}</span> : null}
+                              </span>
                               {roles.length ? (
                                 <span className="users-list__game-roles">{roles.join(' · ')}</span>
                               ) : null}
