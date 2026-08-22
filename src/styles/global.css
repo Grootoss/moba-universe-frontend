@@ -1665,10 +1665,18 @@ body.has-cookie-banner {
   letter-spacing: 0.04em;
 }
 
+.profile-game-block__roles {
+  margin: 0.4rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+}
+
 .profile-game-block__rank {
   margin-top: 0.35rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
 .profile-links__list {
@@ -1736,6 +1744,9 @@ body.has-cookie-banner {
 
 .users-list__ranks {
   flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
   font-size: 0.875rem;
   color: var(--text-muted);
   line-height: 1.45;
@@ -2200,9 +2211,32 @@ body.has-cookie-banner {
 
 .cabinet__summary-games {
   margin: 0.75rem 0 0;
-  padding-left: 1.1rem;
-  color: var(--text);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cabinet__summary-game {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.cabinet__summary-game-name {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.cabinet__summary-game-roles {
   font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.cabinet__summary-game-rank {
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
 .cabinet__summary-actions {
@@ -2505,13 +2539,30 @@ body.has-cookie-banner {
 
 @media (min-width: 800px) {
   .users-search {
-    grid-template-columns: 1.4fr 1fr 1fr auto;
+    grid-template-columns: 1fr auto;
     align-items: end;
   }
 }
 
 .users-search__btn {
   min-height: 2.75rem;
+}
+
+.users-list__game {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.users-list__game-name {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.users-list__game-roles {
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .cabinet__notice {
@@ -2641,12 +2692,6 @@ body.has-cookie-banner {
 .contacts-list__btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-}
-
-.profile-game-block__roles {
-  margin: 0.4rem 0 0;
-  font-size: 0.875rem;
-  color: var(--text-muted);
 }
 
 .profile-request {

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clearTokens, fetchMe, getAccessToken } from '../api/auth'
-import { fetchMyContacts } from '../api/contacts'
 import {
   cancelOwnProfile,
   fetchOwnProfile,
@@ -12,26 +11,12 @@ import {
   updateOwnGames,
   updateOwnProfile,
 } from '../api/profile'
-import ContactModal from '../components/ContactModal'
-import ContactRequestActions from '../components/ContactRequestActions'
-import type { AuthUser, ContactItem, OwnProfile, ProfileOptions, SocialContact } from '../types/profile'
+import type { AuthUser, OwnProfile, ProfileOptions } from '../types/profile'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { roleLabel, rolesForGame } from '../utils/gameRoles'
+import { normalizeTelegramUrl, telegramFromContacts } from '../utils/telegram'
 
 type GameRow = { game: string; rank: string; roles: string[]; sort_order: number }
-type ContactRow = { label: string; url: string; is_public: boolean }
-
-const CONTACT_PRESETS = ['Telegram', 'Discord', 'VK', 'Twitch', 'YouTube']
-
-function emptyContacts(existing: SocialContact[] | undefined): ContactRow[] {
-  const rows = (existing || []).map((c) => ({
-    label: c.label,
-    url: c.url,
-    is_public: Boolean(c.is_public),
-  }))
-  while (rows.length < 3) rows.push({ label: CONTACT_PRESETS[rows.length] || 'Telegram', url: '', is_public: false })
-  return rows.slice(0, 3)
-}
 
 export default function ProfileCabinetPage() {
   const { t, i18n } = useTranslation()
@@ -52,12 +37,8 @@ export default function ProfileCabinetPage() {
   const [nickname, setNickname] = useState('')
   const [bio, setBio] = useState('')
   const [games, setGames] = useState<GameRow[]>([])
-  const [contactRows, setContactRows] = useState<ContactRow[]>(emptyContacts([]))
-  const [inbox, setInbox] = useState<{ incoming: ContactItem[]; outgoing: ContactItem[] }>({
-    incoming: [],
-    outgoing: [],
-  })
-  const [modalItem, setModalItem] = useState<ContactItem | null>(null)
+  const [telegramUrl, setTelegramUrl] = useState('')
+  const [telegramPublic, setTelegramPublic] = useState(false)
 
   usePageTitle(t('cabinetTitle'))
 
@@ -100,7 +81,9 @@ export default function ProfileCabinetPage() {
         setGames(first ? [{ game: first.slug, rank: ranks[0] || '', roles: [], sort_order: 0 }] : [])
       }
     }
-    setContactRows(emptyContacts(p.contacts))
+    const tg = telegramFromContacts(p.contacts, p.telegram_url)
+    setTelegramUrl(tg.url)
+    setTelegramPublic(tg.is_public)
   }
 
   const gameName = (slug: string) => {
@@ -116,14 +99,9 @@ export default function ProfileCabinetPage() {
     setLoading(true)
     setError('')
     try {
-      const [opts, own, contacts] = await Promise.all([
-        fetchProfileOptions(),
-        fetchOwnProfile(),
-        fetchMyContacts().catch(() => ({ incoming: [], outgoing: [] })),
-      ])
+      const [opts, own] = await Promise.all([fetchProfileOptions(), fetchOwnProfile()])
       setOptions(opts)
       applyProfile(own, opts)
-      setInbox(contacts)
     } catch (e) {
       setProfile(null)
       setError(e instanceof Error ? e.message : t('adminLoadError'))
@@ -197,9 +175,8 @@ export default function ProfileCabinetPage() {
     setError('')
     setSuccess('')
     try {
-      const contacts = contactRows
-        .filter((c) => c.url.trim())
-        .map((c) => ({ label: c.label.trim() || 'Telegram', url: c.url.trim(), is_public: c.is_public }))
+      const url = normalizeTelegramUrl(telegramUrl)
+      const contacts = url ? [{ label: 'Telegram', url, is_public: telegramPublic }] : []
       applyProfile(await updateOwnContacts({ contacts }), options, { keepGames: true })
       setContactsNotice(t('cabinetContactsSaved'))
     } catch (e) {
@@ -308,12 +285,16 @@ export default function ProfileCabinetPage() {
               <p className="cabinet__summary-bio">{bio?.trim() || t('cabinetBioEmpty')}</p>
               {games.length ? (
                 <ul className="cabinet__summary-games">
-                  {games.map((g) => (
-                    <li key={`${g.game}-${g.rank}`}>
-                      {gameName(g.game)}: {g.rank || '—'}
-                      {g.roles.length ? ` · ${g.roles.map((r) => roleLabel(g.game, r, i18n.language, options)).join(', ')}` : ''}
-                    </li>
-                  ))}
+                  {games.map((g) => {
+                    const roles = g.roles.map((r) => roleLabel(g.game, r, i18n.language, options)).filter(Boolean)
+                    return (
+                      <li key={`${g.game}-${g.rank}`} className="cabinet__summary-game">
+                        <span className="cabinet__summary-game-name">{gameName(g.game)}</span>
+                        {roles.length ? <span className="cabinet__summary-game-roles">{roles.join(' · ')}</span> : null}
+                        <span className="cabinet__summary-game-rank">{g.rank || '—'}</span>
+                      </li>
+                    )
+                  })}
                 </ul>
               ) : null}
             </div>
@@ -474,52 +455,31 @@ export default function ProfileCabinetPage() {
             <h2 className="cabinet__block-title">{t('cabinetSectionContacts')}</h2>
             <p className="cabinet__block-hint">{t('cabinetSectionContactsHint')}</p>
             <div className="cabinet__form">
-              {contactRows.map((row, index) => (
-                <div key={index} className="cabinet__contact-row">
-                  <label className="admin-field">
-                    <span>{t('cabinetContactLabel')}</span>
-                    <select
-                      value={CONTACT_PRESETS.includes(row.label) ? row.label : 'Telegram'}
-                      onChange={(e) => {
-                        const label = e.target.value
-                        setContactRows((prev) => prev.map((r, i) => (i === index ? { ...r, label } : r)))
-                        setContactsNotice('')
-                      }}
-                    >
-                      {CONTACT_PRESETS.map((label) => (
-                        <option key={label} value={label}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="admin-field">
-                    <span>{t('cabinetContactUrl')}</span>
-                    <input
-                      type="url"
-                      placeholder="https://"
-                      value={row.url}
-                      onChange={(e) => {
-                        const url = e.target.value
-                        setContactRows((prev) => prev.map((r, i) => (i === index ? { ...r, url } : r)))
-                        setContactsNotice('')
-                      }}
-                    />
-                  </label>
-                  <label className="cabinet__public-toggle">
-                    <input
-                      type="checkbox"
-                      checked={row.is_public}
-                      onChange={(e) => {
-                        const is_public = e.target.checked
-                        setContactRows((prev) => prev.map((r, i) => (i === index ? { ...r, is_public } : r)))
-                        setContactsNotice('')
-                      }}
-                    />
-                    <span>{row.is_public ? t('cabinetContactPublic') : t('cabinetContactPrivate')}</span>
-                  </label>
-                </div>
-              ))}
+              <label className="admin-field">
+                <span>{t('cabinetTelegram')}</span>
+                <input
+                  type="text"
+                  placeholder={t('cabinetTelegramPlaceholder')}
+                  value={telegramUrl}
+                  onChange={(e) => {
+                    setTelegramUrl(e.target.value)
+                    setContactsNotice('')
+                  }}
+                  autoComplete="off"
+                />
+              </label>
+              <label className="cabinet__public-toggle">
+                <input
+                  type="checkbox"
+                  checked={telegramPublic}
+                  onChange={(e) => {
+                    setTelegramPublic(e.target.checked)
+                    setContactsNotice('')
+                  }}
+                />
+                <span>{t('cabinetTelegramPublic')}</span>
+              </label>
+              <p className="cabinet__block-hint">{t('cabinetTelegramPublicHint')}</p>
               <div className="cabinet__actions">
                 <button type="button" className="admin-btn" disabled={savingContacts} onClick={() => void onSaveContacts()}>
                   {savingContacts ? t('loading') : t('cabinetSaveContacts')}
@@ -532,78 +492,7 @@ export default function ProfileCabinetPage() {
               ) : null}
             </div>
           </section>
-
-          <section className="cabinet__block">
-            <h2 className="cabinet__block-title">{t('contactsTitle')}</h2>
-            <p className="cabinet__block-hint">{t('contactsHint')}</p>
-            <div className="contacts-columns">
-              <div>
-                <h3 className="contacts-columns__title">{t('contactsIncoming')}</h3>
-                {inbox.incoming.length ? (
-                  <ul className="contacts-list">
-                    {inbox.incoming.map((item) => (
-                      <li key={item.request_id}>
-                        <button type="button" className="contacts-list__btn" onClick={() => setModalItem(item)}>
-                          {item.nickname}
-                        </button>
-                        <ContactRequestActions
-                          item={item}
-                          onUpdated={async (next, action) => {
-                            setInbox(await fetchMyContacts())
-                            if (action === 'accept') {
-                              setModalItem(next)
-                              setContactsNotice(t('contactsSentOk'))
-                            }
-                          }}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="state">{t('contactsEmptyIncoming')}</p>
-                )}
-              </div>
-              <div>
-                <h3 className="contacts-columns__title">{t('contactsOutgoing')}</h3>
-                {inbox.outgoing.length ? (
-                  <ul className="contacts-list">
-                    {inbox.outgoing.map((item) => (
-                      <li key={item.request_id}>
-                        <button type="button" className="contacts-list__btn" onClick={() => setModalItem(item)}>
-                          {item.nickname}
-                        </button>
-                        {item.status === 'declined' ? (
-                          <span className="contacts-list__status">{t('contactsDeclined')}</span>
-                        ) : item.status === 'pending' ? (
-                          <span className="contacts-list__status">{t('contactsPendingOut')}</span>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="state">{t('contactsEmptyOutgoing')}</p>
-                )}
-              </div>
-            </div>
-          </section>
         </>
-      ) : null}
-
-      {modalItem ? (
-        <ContactModal
-          title={t('contactsModalTitle')}
-          nickname={modalItem.nickname}
-          contacts={modalItem.status === 'accepted' ? modalItem.contacts : null}
-          emptyText={
-            modalItem.status === 'accepted'
-              ? t('contactsModalEmpty')
-              : modalItem.status === 'declined'
-                ? t('contactsDeclined')
-                : t('contactsPendingOut')
-          }
-          closeLabel={t('menuClose')}
-          onClose={() => setModalItem(null)}
-        />
       ) : null}
     </div>
   )

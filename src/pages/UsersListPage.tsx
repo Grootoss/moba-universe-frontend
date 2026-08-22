@@ -9,21 +9,8 @@ import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { siteOrigin } from '../utils/prerender'
 import { gameLabel } from '../utils/gameLabels'
-import { GENERIC_ROLES, roleLabel, rolesForGame } from '../utils/gameRoles'
+import { roleLabel } from '../utils/gameRoles'
 import type { ProfileOptions, PublicProfile } from '../types/profile'
-
-function formatGames(profile: PublicProfile, options: ProfileOptions | null, lang: string): string {
-  if (!profile.games.length) return '—'
-  return profile.games
-    .slice()
-    .sort((a, b) => a.sort_order - b.sort_order)
-    .map((g) => {
-      const roles = (g.roles || []).map((slug) => roleLabel(g.game, String(slug), lang, options)).filter(Boolean)
-      const rolePart = roles.length ? ` (${roles.join(', ')})` : ''
-      return `${gameLabel(g.game)}: ${g.rank || '—'}${rolePart}`
-    })
-    .join(' · ')
-}
 
 export default function UsersListPage() {
   const { t, i18n } = useTranslation()
@@ -32,8 +19,6 @@ export default function UsersListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const nameQuery = searchParams.get('q') ?? ''
-  const game = searchParams.get('game') ?? ''
-  const role = searchParams.get('role') ?? ''
 
   const [users, setUsers] = useState<PublicProfile[]>([])
   const [options, setOptions] = useState<ProfileOptions | null>(null)
@@ -56,32 +41,17 @@ export default function UsersListPage() {
   useJsonLd(listSchema)
   usePrerenderReady(listReady)
 
-  const roleOptions = game ? rolesForGame(game, options) : GENERIC_ROLES
-
-  const patchSearch = (patch: { q?: string; game?: string; role?: string }) => {
-    const next = new URLSearchParams(searchParams)
-    const values = {
-      q: patch.q ?? nameQuery,
-      game: patch.game ?? game,
-      role: patch.role ?? role,
-    }
-    if (patch.game !== undefined && patch.game !== game) values.role = ''
-    for (const [key, value] of Object.entries(values)) {
-      const trimmed = value.trim()
-      if (trimmed) next.set(key, trimmed)
-      else next.delete(key)
-    }
+  const patchSearch = (q: string) => {
+    const next = new URLSearchParams()
+    const trimmed = q.trim()
+    if (trimmed) next.set('q', trimmed)
     setSearchParams(next, { replace: true })
   }
 
-  const load = async (params?: { q?: string; game?: string; role?: string }) => {
+  const load = async (q?: string) => {
     setError(false)
     try {
-      const data = await fetchPublicUsers({
-        q: params?.q ?? nameQuery,
-        game: params?.game ?? game,
-        role: params?.role ?? role,
-      })
+      const data = await fetchPublicUsers({ q: q ?? nameQuery })
       setUsers(data)
     } catch {
       setError(true)
@@ -103,7 +73,7 @@ export default function UsersListPage() {
     const timer = window.setTimeout(() => {
       void (async () => {
         try {
-          const data = await fetchPublicUsers({ q: nameQuery, game, role })
+          const data = await fetchPublicUsers({ q: nameQuery })
           if (!cancelled) setUsers(data)
         } catch {
           if (!cancelled) {
@@ -119,7 +89,7 @@ export default function UsersListPage() {
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [nameQuery, game, role])
+  }, [nameQuery])
 
   if (error && !users.length && listReady) {
     return (
@@ -154,35 +124,10 @@ export default function UsersListPage() {
           <input
             type="search"
             value={nameQuery}
-            onChange={(e) => patchSearch({ q: e.target.value })}
+            onChange={(e) => patchSearch(e.target.value)}
             placeholder={t('usersSearchNamePlaceholder')}
             autoComplete="off"
           />
-        </label>
-        <label className="admin-field">
-          <span>{t('usersSearchGame')}</span>
-          <select
-            value={game}
-            onChange={(e) => patchSearch({ game: e.target.value, role: '' })}
-          >
-            <option value="">{t('usersSearchAnyGame')}</option>
-            {(options?.games || []).map((g) => (
-              <option key={g.slug} value={g.slug}>
-                {i18n.language === 'ru' ? g.name_ru : g.name_en}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="admin-field">
-          <span>{t('usersSearchRole')}</span>
-          <select value={role} onChange={(e) => patchSearch({ role: e.target.value })}>
-            <option value="">{t('usersSearchAnyRole')}</option>
-            {roleOptions.map((r) => (
-              <option key={r.slug} value={r.slug}>
-                {i18n.language === 'ru' ? r.name_ru : r.name_en}
-              </option>
-            ))}
-          </select>
         </label>
         <button type="submit" className="btn btn--primary users-search__btn">
           {t('usersSearchSubmit')}
@@ -200,7 +145,26 @@ export default function UsersListPage() {
               >
                 <span className="users-list__id">#{user.user_id}</span>
                 <span className="users-list__nick">{user.nickname}</span>
-                <span className="users-list__ranks">{formatGames(user, options, i18n.language)}</span>
+                <span className="users-list__ranks">
+                  {user.games.length
+                    ? user.games
+                        .slice()
+                        .sort((a, b) => a.sort_order - b.sort_order)
+                        .map((g) => {
+                          const roles = (g.roles || [])
+                            .map((slug) => roleLabel(g.game, String(slug), i18n.language, options))
+                            .filter(Boolean)
+                          return (
+                            <span key={g.game} className="users-list__game">
+                              <span className="users-list__game-name">{gameLabel(g.game)}</span>
+                              {roles.length ? (
+                                <span className="users-list__game-roles">{roles.join(' · ')}</span>
+                              ) : null}
+                            </span>
+                          )
+                        })
+                    : '—'}
+                </span>
               </Link>
             </li>
           ))}
