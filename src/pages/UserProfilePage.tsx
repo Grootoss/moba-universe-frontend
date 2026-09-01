@@ -1,54 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchPublicProfile } from '../api/admin'
-import { fetchProfileOptions } from '../api/profile'
 import ErrorState from '../components/ErrorState'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { siteOrigin } from '../utils/prerender'
 import { gameLabel } from '../utils/gameLabels'
-import { roleLabel as roleNameFor } from '../utils/gameRoles'
-import type { ProfileOptions, PublicProfile, SocialContact } from '../types/profile'
-
-function safeHttpUrl(url: string | null | undefined): string | null {
-  if (!url) return null
-  const s = url.trim()
-  return /^https?:\/\//i.test(s) ? s : null
-}
-
-function publicContacts(profile: PublicProfile): SocialContact[] {
-  if (profile.contacts?.length) return profile.contacts.filter((c) => c.is_public && safeHttpUrl(c.url))
-  const fromDict = Object.entries(profile.social_links || {})
-    .map(([label, url]) => ({ label, url, is_public: true }))
-    .filter((c) => safeHttpUrl(c.url))
-  if (safeHttpUrl(profile.telegram_url) && !fromDict.some((c) => c.label.toLowerCase() === 'telegram')) {
-    fromDict.unshift({ label: 'Telegram', url: profile.telegram_url as string, is_public: true })
-  }
-  return fromDict
-}
+import type { PublicProfile } from '../types/profile'
 
 export default function UserProfilePage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { lang = 'ru', id = '' } = useParams()
   const navigate = useNavigate()
-  const location = useLocation()
   const [searchParams] = useSearchParams()
 
   const [profile, setProfile] = useState<PublicProfile | null>(null)
-  const [options, setOptions] = useState<ProfileOptions | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   const userId = Number(id)
   const isApproved = profile?.moderation_status === 'approved'
   const showPreviewBanner = Boolean(profile) && !isApproved
-  const usersSearch =
-    location.state && typeof location.state === 'object' && 'usersSearch' in location.state
-      ? String((location.state as { usersSearch?: string }).usersSearch || '')
-      : ''
-  const usersBackTo = `/${lang}/users${usersSearch}`
+  const usersBackTo = `/${lang}/users`
 
   const profileSchema = useMemo(() => {
     if (!profile || !isApproved) return null
@@ -59,7 +34,6 @@ export default function UserProfilePage() {
       name: profile.nickname,
       description: profile.bio?.trim() || '',
       url,
-      sameAs: publicContacts(profile).map((c) => safeHttpUrl(c.url)).filter(Boolean),
     }
   }, [profile, isApproved, lang])
 
@@ -69,12 +43,6 @@ export default function UserProfilePage() {
   )
   useJsonLd(profileSchema)
   usePrerenderReady(!loading)
-
-  useEffect(() => {
-    void fetchProfileOptions()
-      .then(setOptions)
-      .catch(() => setOptions(null))
-  }, [])
 
   useEffect(() => {
     const load = async () => {
@@ -126,9 +94,6 @@ export default function UserProfilePage() {
     )
   }
 
-  const links = publicContacts(profile)
-  const roleLabel = (game: string, slug: string) => roleNameFor(game, String(slug), i18n.language, options)
-
   return (
     <div className="page profile-page">
       <Link to={usersBackTo} className="back-link">
@@ -155,30 +120,10 @@ export default function UserProfilePage() {
             {profile.games.map((g) => (
               <article key={g.game} className="profile-game-block">
                 <h3 className="profile-game-block__game">{gameLabel(g.game)}</h3>
-                {g.roles?.length ? (
-                  <p className="profile-game-block__roles">
-                    {(g.roles || []).map((slug) => roleLabel(g.game, slug)).join(' · ')}
-                  </p>
-                ) : null}
                 <p className="profile-game-block__rank">{g.rank || '—'}</p>
               </article>
             ))}
           </div>
-        </section>
-      ) : null}
-
-      {links.length ? (
-        <section className="profile-links">
-          <h2 className="profile-section__title">{t('profileLinks')}</h2>
-          <ul className="profile-links__list">
-            {links.map((c) => (
-              <li key={`${c.label}-${c.url}`}>
-                <a href={safeHttpUrl(c.url)!} target="_blank" rel="noopener noreferrer">
-                  {c.label}
-                </a>
-              </li>
-            ))}
-          </ul>
         </section>
       ) : null}
     </div>

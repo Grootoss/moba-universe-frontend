@@ -39,8 +39,8 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
         title: 'Профили игроков',
         paragraphs: [
           'Публичные профили создаются пользователями и проходят модерацию перед публикацией.',
-          'Ранги, роли 1–5 и игры в профиле указываются пользователем добровольно. Сайт не проверяет игровые аккаунты и не связан с игровыми серверами.',
-          'Поиск опубликованных профилей доступен по нику. В профиле можно указать Telegram и сделать его публичным — тогда ссылку увидят все посетители страницы. Без этой отметки Telegram другим не показывается. Не публикуйте чужие контакты и не используйте Сайт для спама, мошенничества или нарушения закона.',
+          'Ранги и игры в профиле указываются пользователем добровольно. Сайт не проверяет игровые аккаунты и не связан с игровыми серверами.',
+          'Не публикуйте чужие контакты и не используйте Сайт для спама, мошенничества или нарушения закона.',
         ],
       },
       {
@@ -92,8 +92,8 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
         title: 'Player profiles',
         paragraphs: [
           'Public profiles are created by users and reviewed before publication.',
-          'Ranks, roles 1–5, and games in profiles are self-reported. The Site does not verify game accounts and is not connected to game servers.',
-          'Published profiles can be searched by nickname. You may add Telegram and mark it public — then every visitor of the page will see the link. Without that mark, Telegram is not shown to others. Do not publish someone else’s contacts or use the Site for spam, fraud, or illegal activity.',
+          'Ranks and games in profiles are self-reported. The Site does not verify game accounts and is not connected to game servers.',
+          'Do not publish someone else’s contacts or use the Site for spam, fraud, or illegal activity.',
         ],
       },
       {

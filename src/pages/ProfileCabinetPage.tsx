@@ -7,16 +7,13 @@ import {
   fetchOwnProfile,
   fetchProfileOptions,
   submitOwnProfile,
-  updateOwnContacts,
   updateOwnGames,
   updateOwnProfile,
 } from '../api/profile'
 import type { AuthUser, OwnProfile, ProfileOptions } from '../types/profile'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { roleLabel, rolesForGame } from '../utils/gameRoles'
-import { normalizeTelegramUrl, telegramFromContacts } from '../utils/telegram'
 
-type GameRow = { game: string; rank: string; roles: string[]; sort_order: number }
+type GameRow = { game: string; rank: string; sort_order: number }
 
 export default function ProfileCabinetPage() {
   const { t, i18n } = useTranslation()
@@ -29,16 +26,12 @@ export default function ProfileCabinetPage() {
   const [loading, setLoading] = useState(true)
   const [savingText, setSavingText] = useState(false)
   const [savingGames, setSavingGames] = useState(false)
-  const [savingContacts, setSavingContacts] = useState(false)
   const [gamesNotice, setGamesNotice] = useState('')
-  const [contactsNotice, setContactsNotice] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [nickname, setNickname] = useState('')
   const [bio, setBio] = useState('')
   const [games, setGames] = useState<GameRow[]>([])
-  const [telegramUrl, setTelegramUrl] = useState('')
-  const [telegramPublic, setTelegramPublic] = useState(false)
 
   usePageTitle(t('cabinetTitle'))
 
@@ -70,7 +63,6 @@ export default function ProfileCabinetPage() {
       const mapped = (Array.isArray(p.games) ? p.games : []).map((g, i) => ({
         game: g.game,
         rank: g.rank,
-        roles: Array.isArray(g.roles) ? g.roles.map(String) : [],
         sort_order: g.sort_order ?? i,
       }))
       if (mapped.length) {
@@ -78,12 +70,9 @@ export default function ProfileCabinetPage() {
       } else {
         const first = opts?.games[0]
         const ranks = first ? opts?.ranks[first.slug] || [] : []
-        setGames(first ? [{ game: first.slug, rank: ranks[0] || '', roles: [], sort_order: 0 }] : [])
+        setGames(first ? [{ game: first.slug, rank: ranks[0] || '', sort_order: 0 }] : [])
       }
     }
-    const tg = telegramFromContacts(p.contacts, p.telegram_url)
-    setTelegramUrl(tg.url)
-    setTelegramPublic(tg.is_public)
   }
 
   const gameName = (slug: string) => {
@@ -93,7 +82,6 @@ export default function ProfileCabinetPage() {
   }
 
   const ranksFor = (game: string) => options?.ranks[game] || []
-  const rolesFor = (game: string) => rolesForGame(game, options)
 
   const load = async () => {
     setLoading(true)
@@ -155,7 +143,7 @@ export default function ProfileCabinetPage() {
           games: games.map((g, i) => ({
             game: g.game,
             rank: g.rank,
-            roles: g.roles.map(String),
+            roles: [],
             sort_order: i,
           })),
         }),
@@ -166,23 +154,6 @@ export default function ProfileCabinetPage() {
       setError(e instanceof Error ? e.message : t('adminSaveError'))
     } finally {
       setSavingGames(false)
-    }
-  }
-
-  const onSaveContacts = async () => {
-    setSavingContacts(true)
-    setContactsNotice('')
-    setError('')
-    setSuccess('')
-    try {
-      const url = normalizeTelegramUrl(telegramUrl)
-      const contacts = url ? [{ label: 'Telegram', url, is_public: telegramPublic }] : []
-      applyProfile(await updateOwnContacts({ contacts }), options, { keepGames: true })
-      setContactsNotice(t('cabinetContactsSaved'))
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t('adminSaveError'))
-    } finally {
-      setSavingContacts(false)
     }
   }
 
@@ -207,25 +178,13 @@ export default function ProfileCabinetPage() {
     const ranks = ranksFor(next.slug)
     setGames((prev) => [
       ...prev,
-      { game: next.slug, rank: ranks[0] || '', roles: [], sort_order: prev.length },
+      { game: next.slug, rank: ranks[0] || '', sort_order: prev.length },
     ])
     setGamesNotice('')
   }
 
   const removeGame = (index: number) => {
     setGames((prev) => prev.filter((_, i) => i !== index).map((g, i) => ({ ...g, sort_order: i })))
-    setGamesNotice('')
-  }
-
-  const toggleRole = (index: number, slug: string) => {
-    setGames((prev) =>
-      prev.map((row, i) => {
-        if (i !== index) return row
-        const key = String(slug)
-        const has = row.roles.map(String).includes(key)
-        return { ...row, roles: has ? row.roles.filter((r) => String(r) !== key) : [...row.roles, key] }
-      }),
-    )
     setGamesNotice('')
   }
 
@@ -285,16 +244,12 @@ export default function ProfileCabinetPage() {
               <p className="cabinet__summary-bio">{bio?.trim() || t('cabinetBioEmpty')}</p>
               {games.length ? (
                 <ul className="cabinet__summary-games">
-                  {games.map((g) => {
-                    const roles = g.roles.map((r) => roleLabel(g.game, r, i18n.language, options)).filter(Boolean)
-                    return (
-                      <li key={`${g.game}-${g.rank}`} className="cabinet__summary-game">
-                        <span className="cabinet__summary-game-name">{gameName(g.game)}</span>
-                        {roles.length ? <span className="cabinet__summary-game-roles">{roles.join(' · ')}</span> : null}
-                        <span className="cabinet__summary-game-rank">{g.rank || '—'}</span>
-                      </li>
-                    )
-                  })}
+                  {games.map((g) => (
+                    <li key={`${g.game}-${g.rank}`} className="cabinet__summary-game">
+                      <span className="cabinet__summary-game-name">{gameName(g.game)}</span>
+                      <span className="cabinet__summary-game-rank">{g.rank || '—'}</span>
+                    </li>
+                  ))}
                 </ul>
               ) : null}
             </div>
@@ -373,7 +328,7 @@ export default function ProfileCabinetPage() {
                             const game = e.target.value
                             const rank = ranksFor(game)[0] || ''
                             setGames((prev) =>
-                              prev.map((row, i) => (i === index ? { ...row, game, rank, roles: [] } : row)),
+                              prev.map((row, i) => (i === index ? { ...row, game, rank } : row)),
                             )
                             setGamesNotice('')
                           }}
@@ -411,25 +366,6 @@ export default function ProfileCabinetPage() {
                         {t('cabinetRemoveGame')}
                       </button>
                     </div>
-                    <div className="cabinet__roles">
-                      <span className="cabinet__roles-label">{t('cabinetRoles')}</span>
-                      <div className="cabinet__roles-list">
-                        {rolesFor(g.game).map((role) => {
-                          const on = g.roles.map(String).includes(String(role.slug))
-                          return (
-                            <button
-                              key={role.slug}
-                              type="button"
-                              className={`cabinet__role-chip${on ? ' is-on' : ''}`}
-                              aria-pressed={on}
-                              onClick={() => toggleRole(index, String(role.slug))}
-                            >
-                              {i18n.language === 'ru' ? role.name_ru : role.name_en}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
                   </div>
                 ))}
                 {games.length < (options?.games.length || 0) ? (
@@ -446,48 +382,6 @@ export default function ProfileCabinetPage() {
               {gamesNotice ? (
                 <p className="cabinet__notice" role="status" aria-live="polite">
                   {gamesNotice}
-                </p>
-              ) : null}
-            </div>
-          </section>
-
-          <section className="cabinet__block">
-            <h2 className="cabinet__block-title">{t('cabinetSectionContacts')}</h2>
-            <p className="cabinet__block-hint">{t('cabinetSectionContactsHint')}</p>
-            <div className="cabinet__form">
-              <label className="admin-field">
-                <span>{t('cabinetTelegram')}</span>
-                <input
-                  type="text"
-                  placeholder={t('cabinetTelegramPlaceholder')}
-                  value={telegramUrl}
-                  onChange={(e) => {
-                    setTelegramUrl(e.target.value)
-                    setContactsNotice('')
-                  }}
-                  autoComplete="off"
-                />
-              </label>
-              <label className="cabinet__public-toggle">
-                <input
-                  type="checkbox"
-                  checked={telegramPublic}
-                  onChange={(e) => {
-                    setTelegramPublic(e.target.checked)
-                    setContactsNotice('')
-                  }}
-                />
-                <span>{t('cabinetTelegramPublic')}</span>
-              </label>
-              <p className="cabinet__block-hint">{t('cabinetTelegramPublicHint')}</p>
-              <div className="cabinet__actions">
-                <button type="button" className="admin-btn" disabled={savingContacts} onClick={() => void onSaveContacts()}>
-                  {savingContacts ? t('loading') : t('cabinetSaveContacts')}
-                </button>
-              </div>
-              {contactsNotice ? (
-                <p className="cabinet__notice" role="status" aria-live="polite">
-                  {contactsNotice}
                 </p>
               ) : null}
             </div>

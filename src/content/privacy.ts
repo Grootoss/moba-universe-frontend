@@ -19,7 +19,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
     title: 'Политика конфиденциальности',
     updatedLabel: 'Дата обновления: 22.08.2026',
     intro:
-      'Настоящая Политика определяет порядок обработки и защиты персональных данных пользователей сайта Moba Universe (далее — «Сайт») — неофициального fan-made ресурса с главной страницей, гайдами по MOBA-играм, каталогом пользователей (поиск опубликованных профилей по нику) и личными страницами игроков, а также сервисом регистрации, авторизации и личного кабинета. Политика составлена с учётом требований Федерального закона РФ от 27.07.2006 № 152-ФЗ «О персональных данных», иных применимых норм РФ и, где применимо, правил прозрачности использования cookies и положений GDPR для посетителей из ЕС/ЕЭЗ.',
+      'Настоящая Политика определяет порядок обработки и защиты персональных данных пользователей сайта Moba Universe (далее — «Сайт») — неофициального fan-made ресурса с главной страницей, гайдами по MOBA-играм, каталогом пользователей и личными страницами игроков, а также сервисом регистрации, авторизации и личного кабинета. Политика составлена с учётом требований Федерального закона РФ от 27.07.2006 № 152-ФЗ «О персональных данных», иных применимых норм РФ и, где применимо, правил прозрачности использования cookies и положений GDPR для посетителей из ЕС/ЕЭЗ.',
     sections: [
       {
         title: 'Оператор персональных данных',
@@ -48,7 +48,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
         ],
         list: [
           'Данные учётной записи при регистрации и входе: адрес электронной почты (email), никнейм (логин), хэш пароля (сам пароль в открытом виде не хранится), роль учётной записи (пользователь / модератор / администратор)',
-          'Данные профиля: никнейм для отображения и текст «о себе» (проходят модерацию перед публикацией и при повторном изменении после одобрения); выбранные MOBA-игры, ранги и роли 1–5 из справочника Сайта (сохраняются сразу и могут обновляться без отдельной модерации); ссылка на Telegram с признаком «публичная / не публичная»; статус модерации (черновик / на проверке / одобрен / отклонён); замечания модератора (при отклонении); признак публичности профиля',
+          'Данные профиля: никнейм для отображения и текст «о себе» (проходят модерацию перед публикацией и при повторном изменении после одобрения); выбранные MOBA-игры и ранги из справочника Сайта (сохраняются сразу и могут обновляться без отдельной модерации); статус модерации (черновик / на проверке / одобрен / отклонён); замечания модератора (при отклонении); признак публичности профиля',
           'Технические данные сессии авторизации: JWT access/refresh-токены на стороне клиента (браузер) и служебные сведения для проверки токена на сервере',
           'Технические данные визита: IP-адрес, тип и версия браузера (User-Agent), язык, приблизительные данные об устройстве и экране, дата и время визита, URL страниц, referrer — могут фиксироваться в журналах веб-сервера/хостинга при обращении к Сайту, а также собираться Яндекс.Метрикой при наличии согласия на аналитику',
           'Данные об использовании Сайта: просмотры страниц, клики, глубина просмотра, отказы (при включённой аналитике)',
@@ -62,8 +62,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
         paragraphs: [
           'Для создания учётной записи вы указываете email, никнейм и пароль и подтверждаете согласие на обработку персональных данных. Email используется как идентификатор для входа и связи по вопросам аккаунта и модерации. Вход пользователей выполняется через страницу входа Сайта; служебный вход персонала (администратор / модератор) — через отдельную страницу администрирования.',
           'После регистрации вы попадаете в личный кабинет. Никнейм и текст «о себе» вы отправляете на проверку: пока заявка на проверке, эти поля доступны вам только для просмотра. До публикации вы можете открыть превью своей страницы профиля — оно доступно только вам как владельцу учётной записи (а также персоналу Сайта) и не является публичной страницей для других посетителей.',
-          'Игры, ранги и роли 1–5 выбираются из списков Сайта и сохраняются сразу, без отдельной модерации; они могут отображаться на странице профиля вместе с одобренными данными. Каталог пользователей позволяет искать опубликованные профили по нику (никнейму).',
-          'В кабинете можно указать одну ссылку Telegram и отдельно включить галочку «сделать публичным». Если галочка включена, Telegram виден всем посетителям публичного профиля. Если галочка выключена, ссылка хранится в аккаунте и не показывается другим посетителям. Обмена контактами по запросу на Сайте нет.',
+          'Игры и ранги выбираются из списков Сайта и сохраняются сразу, без отдельной модерации; они могут отображаться на странице профиля вместе с одобренными данными. Каталог пользователей показывает опубликованные профили.',
           'Публикация профиля на Сайте (страница вида /user/{id}) для других посетителей возможна после модерации никнейма и текста «о себе»: администратор или модератор одобряет профиль. При отклонении вам может быть показано замечание; после правок никнейма/«о себе» вы можете снова отправить их на проверку. Повторное изменение никнейма или «о себе» после публикации снова снимает профиль с публичного показа до нового одобрения.',
           'Пароли хранятся только в виде криптографического хэша. Access- и refresh-токены используются для поддержания сессии; вы можете завершить сессию выходом из аккаунта и очисткой данных сайта в браузере.',
         ],
@@ -73,7 +72,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
         paragraphs: ['Данные обрабатываются в следующих целях:'],
         list: [
           'регистрация и аутентификация пользователей',
-          'создание, редактирование, модерация никнейма и текста «о себе», сохранение игр/рангов/ролей и ссылки Telegram, поиск пользователей по нику, превью и отображение публичных профилей',
+          'создание, редактирование, модерация никнейма и текста «о себе», сохранение игр и рангов, превью и отображение публичных профилей',
           'обеспечение работы интерфейса Сайта (язык, тема оформления)',
           'публикация редакционных материалов (гайдов) оператором Сайта',
           'связь с пользователем по вопросам аккаунта, модерации и прав субъекта данных',
@@ -195,7 +194,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
     title: 'Privacy Policy',
     updatedLabel: 'Last updated: 22.08.2026',
     intro:
-      'This Privacy Policy explains how Moba Universe (the “Site”) — an unofficial fan-made resource with a homepage, MOBA guides, a user directory (search of published profiles by nickname), public player pages, registration, authentication, and a personal cabinet — processes and protects personal data. It is prepared with regard to Russian Federal Law No. 152-FZ “On Personal Data”, other applicable Russian rules, cookie transparency practices, and, where applicable, the GDPR for visitors from the EU/EEA.',
+      'This Privacy Policy explains how Moba Universe (the “Site”) — an unofficial fan-made resource with a homepage, MOBA guides, a user directory, public player pages, registration, authentication, and a personal cabinet — processes and protects personal data. It is prepared with regard to Russian Federal Law No. 152-FZ “On Personal Data”, other applicable Russian rules, cookie transparency practices, and, where applicable, the GDPR for visitors from the EU/EEA.',
     sections: [
       {
         title: 'Data controller',
@@ -222,7 +221,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
         paragraphs: ['Depending on your actions and consent, we may process:'],
         list: [
           'Account data on registration and login: email address, nickname (username), password hash (the password itself is not stored in plain text), account role (user / moderator / administrator)',
-          'Profile data: display nickname and “about” text (moderated before publishing and again if changed after approval); selected MOBA games, ranks, and roles 1–5 from the Site catalog (saved immediately and may update without a separate review); a Telegram link marked public or not public; moderation status (draft / pending / approved / rejected); moderator notes (on rejection); public visibility flag',
+          'Profile data: display nickname and “about” text (moderated before publishing and again if changed after approval); selected MOBA games and ranks from the Site catalog (saved immediately and may update without a separate review); moderation status (draft / pending / approved / rejected); moderator notes (on rejection); public visibility flag',
           'Auth session data: JWT access/refresh tokens on the client (browser) and server-side token validation data',
           'Technical visit data: IP address, browser type/version (User-Agent), language, approximate device/screen data, visit date/time, page URLs, referrer — may appear in web server/hosting logs when you use the Site, and may be collected by Yandex Metrika if you consent to analytics',
           'Usage data: page views, clicks, engagement metrics (when analytics is enabled)',
@@ -236,8 +235,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
         paragraphs: [
           'To create an account you provide an email, nickname, and password and confirm consent to personal data processing. Email is used as the login identifier and for account/moderation-related communication. Regular users sign in via the Site login page; staff (administrator / moderator) use a separate administration login page.',
           'After registration you open the personal cabinet. Nickname and “about” text are submitted for review; while under review those fields are view-only for you. Before publication you may open a preview of your profile page — available only to you as the account owner (and Site staff), not a public page for other visitors.',
-          'Games, ranks, and roles 1–5 are chosen from Site lists and saved immediately without a separate review; they may appear on the profile page together with approved text. The user directory lets visitors search published profiles by nickname.',
-          'In the cabinet you may add one Telegram link and optionally check “make public”. If the box is checked, Telegram is visible to every visitor of the public profile. If it is not checked, the link is stored on the account and is not shown to other visitors. The Site does not offer contact exchange on request.',
+          'Games and ranks are chosen from Site lists and saved immediately without a separate review; they may appear on the profile page together with approved text. The user directory shows published profiles.',
           'A profile becomes public for other visitors at /user/{id} after nickname/about moderation: an administrator or moderator approves it. If rejected, you may see a note; after editing nickname/about you may submit again. Changing nickname or about after publication removes the profile from public view until it is approved again.',
           'Passwords are stored only as cryptographic hashes. Access and refresh tokens maintain your session; you can end the session by logging out and clearing site data in the browser.',
         ],
@@ -247,7 +245,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
         paragraphs: ['Data is processed to:'],
         list: [
           'register and authenticate users',
-          'create and edit profiles, moderate nickname/about, save games/ranks/roles and a Telegram link, search users by nickname, preview and display public profiles',
+          'create and edit profiles, moderate nickname/about, save games and ranks, preview and display public profiles',
           'provide Site interface features (language, theme)',
           'publish editorial materials (guides) by the Site operator',
           'communicate about the account, moderation, and data-subject rights',

@@ -1,28 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchPublicUsers } from '../api/users'
-import { fetchProfileOptions } from '../api/profile'
 import ErrorState from '../components/ErrorState'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { siteOrigin } from '../utils/prerender'
 import { gameLabel } from '../utils/gameLabels'
-import { roleLabel } from '../utils/gameRoles'
-import type { ProfileOptions, PublicProfile } from '../types/profile'
+import type { PublicProfile } from '../types/profile'
 
 export default function UsersListPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { lang = 'ru' } = useParams()
-  const location = useLocation()
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  const nameQuery = searchParams.get('q') ?? ''
-  const [nameInput, setNameInput] = useState(nameQuery)
 
   const [users, setUsers] = useState<PublicProfile[]>([])
-  const [options, setOptions] = useState<ProfileOptions | null>(null)
   const [listReady, setListReady] = useState(false)
   const [error, setError] = useState(false)
 
@@ -42,19 +34,10 @@ export default function UsersListPage() {
   useJsonLd(listSchema)
   usePrerenderReady(listReady)
 
-  const commitSearch = (raw: string) => {
-    const trimmed = raw.trim()
-    const next = new URLSearchParams()
-    if (trimmed) next.set('q', trimmed)
-    const current = (searchParams.get('q') ?? '').trim()
-    if (trimmed === current) return
-    setSearchParams(next, { replace: true })
-  }
-
-  const load = async (q?: string) => {
+  const load = async () => {
     setError(false)
     try {
-      const data = await fetchPublicUsers({ q: q ?? nameQuery })
+      const data = await fetchPublicUsers()
       setUsers(data)
     } catch {
       setError(true)
@@ -65,26 +48,11 @@ export default function UsersListPage() {
   }
 
   useEffect(() => {
-    setNameInput(nameQuery)
-  }, [nameQuery])
-
-  useEffect(() => {
-    void fetchProfileOptions()
-      .then(setOptions)
-      .catch(() => setOptions(null))
-  }, [])
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => commitSearch(nameInput), nameInput.trim() ? 300 : 0)
-    return () => window.clearTimeout(timer)
-  }, [nameInput])
-
-  useEffect(() => {
     let cancelled = false
     setListReady(false)
     void (async () => {
       try {
-        const data = await fetchPublicUsers({ q: nameQuery })
+        const data = await fetchPublicUsers()
         if (!cancelled) {
           setError(false)
           setUsers(data)
@@ -101,7 +69,7 @@ export default function UsersListPage() {
     return () => {
       cancelled = true
     }
-  }, [nameQuery])
+  }, [])
 
   if (error && !users.length && listReady) {
     return (
@@ -124,38 +92,11 @@ export default function UsersListPage() {
         <p className="page-header__subtitle">{t('usersSubtitle')}</p>
       </header>
 
-      <form
-        className="users-search"
-        onSubmit={(e) => {
-          e.preventDefault()
-          commitSearch(nameInput)
-          void load(nameInput)
-        }}
-      >
-        <label className="admin-field">
-          <span>{t('usersSearchName')}</span>
-          <input
-            type="search"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            placeholder={t('usersSearchNamePlaceholder')}
-            autoComplete="off"
-          />
-        </label>
-        <button type="submit" className="btn btn--primary users-search__btn">
-          {t('usersSearchSubmit')}
-        </button>
-      </form>
-
       {listReady && users.length ? (
         <ul className="users-list">
           {users.map((user) => (
             <li key={user.user_id}>
-              <Link
-                to={`/${lang}/user/${user.user_id}`}
-                state={{ usersSearch: location.search }}
-                className="users-list__row"
-              >
+              <Link to={`/${lang}/user/${user.user_id}`} className="users-list__row">
                 <span className="users-list__id">#{user.user_id}</span>
                 <span className="users-list__nick">{user.nickname}</span>
                 <span className="users-list__ranks">
@@ -163,22 +104,14 @@ export default function UsersListPage() {
                     ? user.games
                         .slice()
                         .sort((a, b) => a.sort_order - b.sort_order)
-                        .map((g) => {
-                          const roles = (g.roles || [])
-                            .map((slug) => roleLabel(g.game, String(slug), i18n.language, options))
-                            .filter(Boolean)
-                          return (
-                            <span key={g.game} className="users-list__game">
-                              <span className="users-list__game-head">
-                                <span className="users-list__game-name">{gameLabel(g.game)}</span>
-                                {g.rank ? <span className="users-list__game-rank">{g.rank}</span> : null}
-                              </span>
-                              {roles.length ? (
-                                <span className="users-list__game-roles">{roles.join(' · ')}</span>
-                              ) : null}
+                        .map((g) => (
+                          <span key={g.game} className="users-list__game">
+                            <span className="users-list__game-head">
+                              <span className="users-list__game-name">{gameLabel(g.game)}</span>
+                              {g.rank ? <span className="users-list__game-rank">{g.rank}</span> : null}
                             </span>
-                          )
-                        })
+                          </span>
+                        ))
                     : '—'}
                 </span>
               </Link>
