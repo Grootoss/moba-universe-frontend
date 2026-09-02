@@ -3,8 +3,9 @@ import { initReactI18next } from 'react-i18next'
 import en from '../locales/en.json'
 import ru from '../locales/ru.json'
 import type { Lang } from '../types/article'
+import { getStoredLang, persistLangPreference } from '../utils/lang'
 
-const savedLang = (localStorage.getItem('lang') as Lang | null) || 'ru'
+const savedLang = getStoredLang()
 
 void i18n.use(initReactI18next).init({
   resources: { ru: { translation: ru }, en: { translation: en } },
@@ -14,10 +15,11 @@ void i18n.use(initReactI18next).init({
 })
 
 document.documentElement.lang = i18n.language
+persistLangPreference(savedLang)
 
 export function setLocale(lang: Lang) {
   void i18n.changeLanguage(lang)
-  localStorage.setItem('lang', lang)
+  persistLangPreference(lang)
   document.documentElement.lang = lang
 }
 

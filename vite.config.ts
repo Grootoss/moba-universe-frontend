@@ -20,12 +20,16 @@ export default defineConfig({
     proxy: {
       '/api': apiTarget,
       '/health': apiTarget,
+      '/sitemap.xml': apiTarget,
+      '/robots.txt': apiTarget,
     },
   },
   preview: {
     proxy: {
       '/api': apiTarget,
       '/health': apiTarget,
+      '/sitemap.xml': apiTarget,
+      '/robots.txt': apiTarget,
     },
   },
 })

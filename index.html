@@ -15,9 +15,12 @@
     <script>
       (function () {
         const theme = localStorage.getItem('theme') || 'dark'
-        const lang = localStorage.getItem('lang') || 'ru'
+        const lang = localStorage.getItem('lang') === 'en' ? 'en' : 'ru'
         document.documentElement.setAttribute('data-theme', theme)
         document.documentElement.lang = lang
+        document.cookie =
+          'lang=' + lang + '; Path=/; Max-Age=31536000; SameSite=Lax' +
+          (location.protocol === 'https:' ? '; Secure' : '')
       })()
     </script>
     <!-- Critical colors before CSS/JS bundles load (prevents white FOUC) -->

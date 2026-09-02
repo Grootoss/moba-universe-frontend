@@ -9,14 +9,29 @@ declare global {
   }
 }
 
+export const PRODUCTION_ORIGIN = 'https://mobauniverse.com'
+
 export function isPrerender(): boolean {
   return typeof window !== 'undefined' && Boolean(window.__PRERENDER__)
 }
 
+/** Collapse www and http variants to the public apex origin. */
+export function canonicalizeOrigin(origin: string): string {
+  const clean = origin.replace(/\/$/, '')
+  if (/^https?:\/\/(www\.)?mobauniverse\.com$/i.test(clean)) {
+    return PRODUCTION_ORIGIN
+  }
+  return clean
+}
+
 /** Absolute site origin for canonical / OG / JSON-LD. */
 export function siteOrigin(): string {
-  if (typeof window === 'undefined') return ''
-  return (window.__PRERENDER_PUBLIC_ORIGIN__ || window.location.origin).replace(/\/$/, '')
+  if (typeof window === 'undefined') return PRODUCTION_ORIGIN
+  const prerender = window.__PRERENDER_PUBLIC_ORIGIN__
+  if (prerender) return canonicalizeOrigin(prerender)
+  const fromEnv = import.meta.env.VITE_PUBLIC_ORIGIN as string | undefined
+  if (fromEnv) return canonicalizeOrigin(fromEnv)
+  return canonicalizeOrigin(window.location.origin)
 }
 
 export function clearPrerenderReady(): void {

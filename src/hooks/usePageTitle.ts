@@ -55,7 +55,11 @@ export function usePageTitle(
   useEffect(() => {
     const lang = currentLang()
     const heading = title?.trim()
-    const fullTitle = heading ? `${heading} | ${SITE_NAME}` : defaultTitle()
+    const fullTitle = !heading || heading === SITE_NAME
+      ? defaultTitle()
+      : heading.includes(SITE_NAME)
+        ? heading
+        : `${heading} | ${SITE_NAME}`
     document.title = fullTitle
 
     const desc = description?.trim() || DEFAULT_DESCRIPTION[lang]
