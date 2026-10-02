@@ -24,6 +24,10 @@ COPY . .
 RUN npm run build
 
 FROM nginx:alpine
+# iptables clamps TCP MSS for VPN tunnels. Needs cap_add: [NET_ADMIN] at runtime.
+RUN apk add --no-cache iptables
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/40-clamp-mss.sh /docker-entrypoint.d/40-clamp-mss.sh
+RUN chmod +x /docker-entrypoint.d/40-clamp-mss.sh
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80 443

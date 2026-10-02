@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<'' | 'authLoginError' | 'authLoginStaffOnly'>('')
   const [loading, setLoading] = useState(false)
 
   usePageTitle(t('authLoginTitle'))
@@ -25,12 +25,12 @@ export default function LoginPage() {
       const me = await fetchMe()
       if (me.role === 'admin' || me.role === 'moderator') {
         clearTokens()
-        setError(t('authLoginStaffOnly'))
+        setError('authLoginStaffOnly')
         return
       }
       void navigate(`/${lang}/profile`, { replace: true })
     } catch {
-      setError(t('authLoginError'))
+      setError('authLoginError')
     } finally {
       setLoading(false)
     }
@@ -41,7 +41,7 @@ export default function LoginPage() {
       <form className="auth-card" onSubmit={onSubmit}>
         <h1>{t('authLoginTitle')}</h1>
         <p className="auth-card__hint">{t('authLoginHint')}</p>
-        {error ? <p className="admin-login__error">{error}</p> : null}
+        {error ? <p className="admin-login__error">{t(error)}</p> : null}
 
         <label className="admin-field">
           <span>{t('authEmail')}</span>

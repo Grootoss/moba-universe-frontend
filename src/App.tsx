@@ -17,6 +17,7 @@ export default function App() {
 
   const blockIndexing = useMemo(() => {
     if (isAdminLayout) return true
+    if (/^\/(ru|en)\/user\/[^/]+/.test(location.pathname)) return true
     const parts = location.pathname.split('/').filter(Boolean)
     const routeTail = parts[parts.length - 1]
     if (location.pathname === '/404' || parts.length === 0) return false
@@ -27,16 +28,17 @@ export default function App() {
 
   useEffect(() => {
     let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null
-    if (blockIndexing) {
-      if (!robots) {
-        robots = document.createElement('meta')
-        robots.setAttribute('name', 'robots')
-        document.head.appendChild(robots)
-      }
-      robots.setAttribute('content', 'noindex, nofollow')
-    } else if (robots) {
-      robots.remove()
+    if (!robots) {
+      robots = document.createElement('meta')
+      robots.setAttribute('name', 'robots')
+      document.head.appendChild(robots)
     }
+    robots.setAttribute(
+      'content',
+      blockIndexing
+        ? 'noindex, nofollow'
+        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+    )
   }, [blockIndexing])
 
   useEffect(() => {

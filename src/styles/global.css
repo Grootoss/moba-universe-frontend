@@ -1055,16 +1055,21 @@ body.has-cookie-banner {
 }
 
 .article-card {
-  display: flex;
-  gap: 1.25rem;
-  align-items: flex-start;
-  padding: 1.5rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: var(--shadow);
-  cursor: pointer;
   transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.article-card__anchor {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  color: inherit;
+  text-decoration: none;
+  border-radius: inherit;
 }
 
 .article-card__cover {
@@ -1133,16 +1138,16 @@ body.has-cookie-banner {
   overflow: hidden;
 }
 
-.article-card:hover,
-.article-card:focus-visible {
+.article-card:has(.article-card__anchor:hover),
+.article-card:has(.article-card__anchor:focus-visible) {
   background: var(--bg-card-hover);
   border-color: var(--accent);
   box-shadow: var(--shadow-lg);
-  outline: none;
 }
 
-.article-card:focus-visible {
-  box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-glow);
+.article-card__anchor:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .article-card__num {
@@ -1169,18 +1174,33 @@ body.has-cookie-banner {
   overflow-wrap: break-word;
 }
 
-.article-card:hover .article-card__title,
-.article-card:focus-visible .article-card__title {
+.article-card:has(.article-card__anchor:hover) .article-card__title,
+.article-card:has(.article-card__anchor:focus-visible) .article-card__title {
   color: var(--accent);
 }
 
-.article-card__link {
+.article-card__more {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--accent);
 }
 
 /* ── Article view ── */
+.breadcrumbs {
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  color: var(--accent);
+}
+
 .back-link {
   display: inline-block;
   font-size: 0.875rem;
@@ -1267,6 +1287,12 @@ body.has-cookie-banner {
   margin: 0.25rem 0 0.5rem;
   font-size: 0.8125rem;
   color: var(--text-faint);
+}
+
+/* 13px date text must clear 4.5:1 on the light card (#fff / #f4f6fb). */
+[data-theme='light'] .article-card__date,
+[data-theme='light'] .article__meta {
+  color: #3d455c;
 }
 
 /* ── Error / 404 ── */
@@ -1437,7 +1463,7 @@ body.has-cookie-banner {
     font-size: 0.9375rem;
   }
 
-  .article-card {
+  .article-card__anchor {
     flex-direction: column;
     gap: 0.75rem;
     padding: 1.125rem;
@@ -1505,7 +1531,7 @@ body.has-cookie-banner {
     padding: 2rem 0 3.5rem;
   }
 
-  .article-card {
+  .article-card__anchor {
     padding: 1.25rem;
     gap: 1rem;
   }
@@ -1530,7 +1556,7 @@ body.has-cookie-banner {
     width: min(100%, 380px);
   }
 
-  .article-card {
+  .article-card__anchor {
     padding: 1.625rem;
   }
 
@@ -1611,7 +1637,7 @@ body.has-cookie-banner {
     font-size: 2.75rem;
   }
 
-  .article-card {
+  .article-card__anchor {
     padding: 1.75rem 2rem;
   }
 

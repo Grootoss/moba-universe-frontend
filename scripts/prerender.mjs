@@ -198,7 +198,12 @@ async function snapshotRoute(page, route) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: TIMEOUT_MS })
   await waitForReady(page)
 
-  const html = await page.content()
+  let html = await page.content()
+  const boot = await page.evaluate(() => window.__PRERENDER_BOOT__ || null)
+  if (boot) {
+    const json = JSON.stringify(boot).replace(/</g, '\\u003c')
+    html = html.replace('</head>', `<script type="application/json" id="__BOOT__">${json}</script></head>`)
+  }
   const file = routeToFile(route)
   await mkdir(path.dirname(file), { recursive: true })
   await writeFile(file, html, 'utf8')

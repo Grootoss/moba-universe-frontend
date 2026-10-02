@@ -10,7 +10,7 @@ import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { categoryDisplayName, ensureArticleCategories } from '../utils/articleCategories'
 import { siteOrigin } from '../utils/prerender'
-import type { Article, Lang } from '../types/article'
+import type { ArticlePreview } from '../types/article'
 import type { ArticleCategory } from '../api/categories'
 
 const PAGE_SIZE = 40
@@ -23,7 +23,7 @@ export default function ArticlesListPage() {
 
   const categorySlug = (searchParams.get('category') ?? '').trim()
 
-  const [articles, setArticles] = useState<Article[]>([])
+  const [articles, setArticles] = useState<ArticlePreview[]>([])
   const [categories, setCategories] = useState<ArticleCategory[]>([])
   const [categoriesReady, setCategoriesReady] = useState(false)
   const [query, setQuery] = useState('')
@@ -32,22 +32,7 @@ export default function ArticlesListPage() {
 
   const sortedCategories = useMemo(() => ensureArticleCategories(categories), [categories])
 
-  const previews = useMemo(
-    () =>
-      articles.map((article) => {
-        const tr = article.translations[i18n.language as Lang] ?? article.translations.en
-        return {
-          id_article: article.id_article,
-          slug: article.slug,
-          title: tr?.title ?? article.slug,
-          excerpt: tr?.excerpt || '',
-          cover_image: article.cover_image || null,
-          cover_thumb: article.cover_thumb || null,
-          updated_at: article.updated_at,
-        }
-      }),
-    [articles, i18n.language],
-  )
+  const previews = articles
 
   const emptyMessage = categorySlug ? t('articlesCategoryEmpty') : t('articlesEmpty')
   const showTagSkeleton = error || !categoriesReady
@@ -99,6 +84,7 @@ export default function ArticlesListPage() {
     const run = async () => {
       try {
         const data = await fetchArticlesPage({
+          lang: lang === 'en' ? 'en' : 'ru',
           page: 1,
           pageSize: PAGE_SIZE,
           q: query,
@@ -124,7 +110,7 @@ export default function ArticlesListPage() {
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [query, categorySlug])
+  }, [query, categorySlug, lang])
 
   const onCategorySelect = (slug: string) => {
     const next = new URLSearchParams(searchParams)
@@ -206,7 +192,7 @@ export default function ArticlesListPage() {
                 key={article.id_article}
                 slug={article.slug}
                 title={article.title}
-                excerpt={article.excerpt}
+                excerpt={article.excerpt || ''}
                 coverImage={article.cover_image}
                 coverThumb={article.cover_thumb}
                 updatedAt={article.updated_at}

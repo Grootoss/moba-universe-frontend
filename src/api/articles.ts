@@ -1,8 +1,9 @@
-import type { Article, ArticlesPage } from '../types/article'
+import type { Article, ArticlePreview, ArticlesPage, Lang } from '../types/article'
 
 const API_BASE = '/api/evergreen/articles'
 
 export async function fetchArticlesPage(options: {
+  lang?: Lang
   page?: number
   pageSize?: number
   q?: string
@@ -10,6 +11,7 @@ export async function fetchArticlesPage(options: {
 }): Promise<ArticlesPage> {
   const params = new URLSearchParams({
     paginated: 'true',
+    lang: options.lang === 'en' ? 'en' : 'ru',
     page: String(options.page ?? 1),
     page_size: String(options.pageSize ?? 6),
   })
@@ -25,8 +27,8 @@ export async function fetchArticlesPage(options: {
   return response.json()
 }
 
-export async function fetchArticles(): Promise<Article[]> {
-  const page = await fetchArticlesPage({ page: 1, pageSize: 100 })
+export async function fetchArticles(lang: Lang = 'ru'): Promise<ArticlePreview[]> {
+  const page = await fetchArticlesPage({ lang, page: 1, pageSize: 100 })
   return page.items
 }
 

@@ -30,7 +30,7 @@ export interface ArticlePreview {
 }
 
 export interface ArticlesPage {
-  items: Article[]
+  items: ArticlePreview[]
   total: number
   page: number
   page_size: number

@@ -45,6 +45,17 @@ export function useSeoRoute() {
     const enPath = `/en${tail}`
     ensureLink('alternate', 'ru').setAttribute('href', absoluteUrl(ruPath))
     ensureLink('alternate', 'en').setAttribute('href', absoluteUrl(enPath))
-    ensureLink('alternate', 'x-default').setAttribute('href', absoluteUrl(enPath))
+    ensureLink('alternate', 'x-default').setAttribute('href', absoluteUrl(ruPath))
+    let feed = document.head.querySelector(
+      'link[rel="alternate"][type="application/rss+xml"]',
+    ) as HTMLLinkElement | null
+    if (!feed) {
+      feed = document.createElement('link')
+      feed.rel = 'alternate'
+      feed.type = 'application/rss+xml'
+      feed.title = 'Moba Universe'
+      document.head.appendChild(feed)
+    }
+    feed.href = `${siteOrigin()}/feed.xml`
   }, [pathname])
 }

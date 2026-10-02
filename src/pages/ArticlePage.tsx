@@ -8,17 +8,34 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { formatArticleDate } from '../utils/formatDate'
-import { siteOrigin } from '../utils/prerender'
+import { isPrerender, siteOrigin } from '../utils/prerender'
 import { absoluteMediaUrl, resolveMediaUrl } from '../utils/mediaUrl'
-import type { Article, Lang } from '../types/article'
+import type { Article, ArticlePreview, Lang } from '../types/article'
+
+function readBoot(slug: string): { article: Article; related: ArticlePreview[] } | null {
+  const el = document.getElementById('__BOOT__')
+  if (!el?.textContent) return null
+  try {
+    const data = JSON.parse(el.textContent) as {
+      slug?: string
+      article?: Article
+      related?: ArticlePreview[]
+    }
+    if (data.slug !== slug || !data.article) return null
+    return { article: data.article, related: data.related ?? [] }
+  } catch {
+    return null
+  }
+}
 
 export default function ArticlePage() {
   const { t, i18n } = useTranslation()
   const { lang = 'ru', slug = '' } = useParams()
 
-  const [article, setArticle] = useState<Article | null>(null)
-  const [related, setRelated] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
+  const boot = readBoot(slug)
+  const [article, setArticle] = useState<Article | null>(boot?.article ?? null)
+  const [related, setRelated] = useState<ArticlePreview[]>(boot?.related ?? [])
+  const [loading, setLoading] = useState(!boot)
   const [error, setError] = useState(false)
 
   const translation = useMemo(() => {
@@ -27,18 +44,7 @@ export default function ArticlePage() {
     return article.translations[currentLang] ?? article.translations.en
   }, [article, i18n.language])
 
-  const relatedPreviews = useMemo(
-    () =>
-      related.map((item) => {
-        const tr = item.translations[i18n.language as Lang] ?? item.translations.en
-        return {
-          slug: item.slug,
-          title: tr?.title ?? item.slug,
-          excerpt: tr?.excerpt?.trim() || '',
-        }
-      }),
-    [related, i18n.language],
-  )
+  const relatedPreviews = related
 
   const createdLabel = formatArticleDate(article?.created_at, lang)
   const updatedLabel = formatArticleDate(article?.updated_at, lang)
@@ -48,49 +54,89 @@ export default function ArticlePage() {
   const articleSchema = useMemo(() => {
     if (!article || !translation) return null
     const url = `${siteOrigin()}/${lang}/evergreen/${article.slug}`
+    const home = `${siteOrigin()}/${lang}`
+    const guides = `${home}/evergreen`
     return {
       '@context': 'https://schema.org',
-      '@type': 'BlogPosting',
-      headline: translation.title,
-      description: translation.excerpt?.trim() || translation.title,
-      inLanguage: lang,
-      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-      url,
-      datePublished: article.created_at || undefined,
-      dateModified: article.updated_at || article.created_at || undefined,
-      image: absoluteMediaUrl(article.cover_image) || undefined,
-      publisher: { '@type': 'Organization', name: 'Moba Universe' },
+      '@graph': [
+        {
+          '@type': 'BlogPosting',
+          headline: translation.title,
+          description: translation.excerpt?.trim() || translation.title,
+          inLanguage: lang,
+          mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+          url,
+          datePublished: article.created_at || undefined,
+          dateModified: article.updated_at || article.created_at || undefined,
+          image: absoluteMediaUrl(article.cover_image) || undefined,
+          author: { '@type': 'Organization', name: 'Moba Universe' },
+          publisher: { '@type': 'Organization', name: 'Moba Universe' },
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: t('navHome'), item: home },
+            { '@type': 'ListItem', position: 2, name: t('navGuides'), item: guides },
+            { '@type': 'ListItem', position: 3, name: translation.title, item: url },
+          ],
+        },
+      ],
     }
-  }, [article, translation, lang])
+  }, [article, translation, lang, t])
 
   useJsonLd(articleSchema)
 
   usePageTitle(
-    loading ? t('loading') : error || !translation ? t('errorArticleTitle') : translation.title,
-    !translation ? t('errorArticleText') : translation.excerpt?.trim() || translation.title,
+    translation?.title || (error ? t('errorArticleTitle') : undefined),
+    translation ? translation.excerpt?.trim() || translation.title : error ? t('errorArticleText') : undefined,
     article?.cover_image || undefined,
+    'article',
   )
   usePrerenderReady(!loading)
 
   useEffect(() => {
-    const load = async () => {
+    if (!isPrerender() || !article) return
+    window.__PRERENDER_BOOT__ = { slug: article.slug, article, related }
+  }, [article, related])
+
+  useEffect(() => {
+    const boot = readBoot(slug)
+    let cancelled = false
+    if (boot) {
+      setArticle(boot.article)
+      setRelated(boot.related)
+      setError(false)
+      setLoading(false)
+    } else {
       setLoading(true)
       setError(false)
       setArticle(null)
+    }
+    const load = async () => {
       try {
-        const current = await fetchArticle(slug)
-        setArticle(current)
-        const all = await fetchArticlesPage({ page: 1, pageSize: 24 })
+        const current = boot?.article ?? (await fetchArticle(slug))
+        if (cancelled) return
+        if (!boot) setArticle(current)
+        const all = await fetchArticlesPage({
+          lang: lang === 'en' ? 'en' : 'ru',
+          page: 1,
+          pageSize: 12,
+        })
+        if (cancelled) return
         setRelated(all.items.filter((item) => item.slug !== current.slug).slice(0, 3))
       } catch {
+        if (cancelled || boot) return
         setError(true)
         setRelated([])
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     void load()
-  }, [slug])
+    return () => {
+      cancelled = true
+    }
+  }, [slug, lang])
 
   if (loading) return <div className="page"><div className="state">{t('loading')}</div></div>
 
@@ -110,9 +156,13 @@ export default function ArticlePage() {
 
   return (
     <div className="page">
-      <Link to={`/${lang}/evergreen`} className="back-link">
-        {t('backToArticles')}
-      </Link>
+      <nav className="breadcrumbs" aria-label="Breadcrumb">
+        <Link to={`/${lang}`}>{t('navHome')}</Link>
+        <span aria-hidden="true"> / </span>
+        <Link to={`/${lang}/evergreen`}>{t('navGuides')}</Link>
+        <span aria-hidden="true"> / </span>
+        <span>{translation.title}</span>
+      </nav>
       <article className="article">
         <header className="article__header">
           <h1 className="article__title">{translation.title}</h1>
@@ -165,7 +215,7 @@ export default function ArticlePage() {
             {relatedPreviews.map((item) => (
               <li key={item.slug}>
                 <Link to={`/${lang}/evergreen/${item.slug}`}>{item.title}</Link>
-                {item.excerpt ? <p className="article-related__excerpt">{item.excerpt}</p> : null}
+                {item.excerpt?.trim() ? <p className="article-related__excerpt">{item.excerpt}</p> : null}
               </li>
             ))}
           </ul>

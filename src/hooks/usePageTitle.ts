@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
-import { siteOrigin } from '../utils/prerender'
+import { PRODUCTION_ORIGIN, siteOrigin } from '../utils/prerender'
 import { absoluteMediaUrl } from '../utils/mediaUrl'
 
 const SITE_NAME = 'Moba Universe'
+const DEFAULT_OG_IMAGE = `${PRODUCTION_ORIGIN}/og-image.png`
 
 const SITE_TAGLINE: Record<string, string> = {
   ru: 'путеводитель твоего скилла',
@@ -15,6 +16,8 @@ const DEFAULT_DESCRIPTION: Record<string, string> = {
 }
 
 function currentLang(): string {
+  const fromPath = window.location.pathname.match(/^\/(ru|en)(\/|$)/)
+  if (fromPath) return fromPath[1]
   return document.documentElement.lang === 'en' ? 'en' : 'ru'
 }
 
@@ -51,10 +54,12 @@ export function usePageTitle(
   title?: string | null,
   description?: string | null,
   image?: string | null,
+  kind: 'website' | 'article' = 'website',
 ) {
   useEffect(() => {
-    const lang = currentLang()
     const heading = title?.trim()
+    if (!heading) return
+    const lang = currentLang()
     const fullTitle = !heading || heading === SITE_NAME
       ? defaultTitle()
       : heading.includes(SITE_NAME)
@@ -67,28 +72,28 @@ export function usePageTitle(
     ensureMetaDescription().setAttribute('content', normalizedDesc)
 
     const pageUrl = `${siteOrigin()}${window.location.pathname}${window.location.search}`
-    const imageUrl = absoluteImageUrl(image)
+    const imageUrl = absoluteImageUrl(image) || DEFAULT_OG_IMAGE
+    const isDefaultImage = imageUrl === DEFAULT_OG_IMAGE
 
-    ensureMetaByAttr('property', 'og:type').setAttribute('content', 'website')
+    ensureMetaByAttr('property', 'og:type').setAttribute('content', kind)
     const locale = lang === 'ru' ? 'ru_RU' : 'en_US'
     ensureMetaByAttr('property', 'og:title').setAttribute('content', fullTitle)
     ensureMetaByAttr('property', 'og:description').setAttribute('content', normalizedDesc)
     ensureMetaByAttr('property', 'og:url').setAttribute('content', pageUrl)
     ensureMetaByAttr('property', 'og:site_name').setAttribute('content', SITE_NAME)
     ensureMetaByAttr('property', 'og:locale').setAttribute('content', locale)
-    ensureMetaByAttr('name', 'twitter:card').setAttribute(
-      'content',
-      imageUrl ? 'summary_large_image' : 'summary',
-    )
+    ensureMetaByAttr('property', 'og:image').setAttribute('content', imageUrl)
+    ensureMetaByAttr('name', 'twitter:card').setAttribute('content', 'summary_large_image')
     ensureMetaByAttr('name', 'twitter:title').setAttribute('content', fullTitle)
     ensureMetaByAttr('name', 'twitter:description').setAttribute('content', normalizedDesc)
+    ensureMetaByAttr('name', 'twitter:image').setAttribute('content', imageUrl)
 
-    if (imageUrl) {
-      ensureMetaByAttr('property', 'og:image').setAttribute('content', imageUrl)
-      ensureMetaByAttr('name', 'twitter:image').setAttribute('content', imageUrl)
+    if (isDefaultImage) {
+      ensureMetaByAttr('property', 'og:image:width').setAttribute('content', '1200')
+      ensureMetaByAttr('property', 'og:image:height').setAttribute('content', '630')
     } else {
-      document.querySelector('meta[property="og:image"]')?.remove()
-      document.querySelector('meta[name="twitter:image"]')?.remove()
+      document.querySelector('meta[property="og:image:width"]')?.remove()
+      document.querySelector('meta[property="og:image:height"]')?.remove()
     }
-  }, [title, description, image])
+  }, [title, description, image, kind])
 }

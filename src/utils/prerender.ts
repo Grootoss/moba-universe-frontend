@@ -6,6 +6,8 @@ declare global {
     __PRERENDER_READY__?: boolean
     /** Canonical public origin while snapshotting (e.g. https://mobauniverse.com) */
     __PRERENDER_PUBLIC_ORIGIN__?: string
+    /** Article payload written into the snapshot so hydration does not wipe the text. */
+    __PRERENDER_BOOT__?: { slug: string; article: unknown; related?: unknown }
   }
 }
 

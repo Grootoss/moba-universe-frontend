@@ -61,6 +61,7 @@ export const router = createBrowserRouter([
           },
           { path: 'privacy', element: <PrivacyPage /> },
           { path: 'terms', element: <TermsPage /> },
+          { path: '*', element: <NotFoundPage /> },
         ],
       },
       { path: '/evergreen', element: <LegacyRedirect to="/evergreen" /> },

@@ -7,6 +7,21 @@ import { usePageTitle } from '../hooks/usePageTitle'
 const USERNAME_RE = /^[A-Za-zА-Яа-яЁё]+$/
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+type RegisterError =
+  | 'authErrEmailRequired'
+  | 'authErrEmailInvalid'
+  | 'authErrEmailTaken'
+  | 'authErrUsernameRequired'
+  | 'authErrUsernameLength'
+  | 'authErrUsernameLetters'
+  | 'authErrUsernameTaken'
+  | 'authErrPasswordRequired'
+  | 'authErrPasswordLength'
+  | 'authErrPasswordConfirmRequired'
+  | 'authErrPasswordMismatch'
+  | 'authErrPrivacyConsent'
+  | 'authRegisterError'
+
 export default function RegisterPage() {
   const { t } = useTranslation()
   const { lang = 'ru' } = useParams()
@@ -17,39 +32,39 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [privacyConsent, setPrivacyConsent] = useState(false)
-  const [errors, setErrors] = useState<string[]>([])
+  const [errors, setErrors] = useState<RegisterError[]>([])
   const [loading, setLoading] = useState(false)
 
   usePageTitle(t('authRegisterTitle'))
 
   const validateClient = () => {
-    const list: string[] = []
+    const list: RegisterError[] = []
     const mail = email.trim()
     const nick = username.trim()
-    if (!mail) list.push(t('authErrEmailRequired'))
-    else if (!EMAIL_RE.test(mail)) list.push(t('authErrEmailInvalid'))
-    if (!nick) list.push(t('authErrUsernameRequired'))
-    else if (nick.length < 3 || nick.length > 10) list.push(t('authErrUsernameLength'))
-    else if (!USERNAME_RE.test(nick)) list.push(t('authErrUsernameLetters'))
-    if (!password) list.push(t('authErrPasswordRequired'))
-    else if (password.length < 6 || password.length > 20) list.push(t('authErrPasswordLength'))
-    if (!passwordConfirm) list.push(t('authErrPasswordConfirmRequired'))
-    else if (password !== passwordConfirm) list.push(t('authErrPasswordMismatch'))
-    if (!privacyConsent) list.push(t('authErrPrivacyConsent'))
+    if (!mail) list.push('authErrEmailRequired')
+    else if (!EMAIL_RE.test(mail)) list.push('authErrEmailInvalid')
+    if (!nick) list.push('authErrUsernameRequired')
+    else if (nick.length < 3 || nick.length > 10) list.push('authErrUsernameLength')
+    else if (!USERNAME_RE.test(nick)) list.push('authErrUsernameLetters')
+    if (!password) list.push('authErrPasswordRequired')
+    else if (password.length < 6 || password.length > 20) list.push('authErrPasswordLength')
+    if (!passwordConfirm) list.push('authErrPasswordConfirmRequired')
+    else if (password !== passwordConfirm) list.push('authErrPasswordMismatch')
+    if (!privacyConsent) list.push('authErrPrivacyConsent')
     return list
   }
 
-  const mapServerError = (msg: string) => {
+  const mapServerError = (msg: string): RegisterError => {
     const lower = msg.toLowerCase()
-    if (lower.includes('email already')) return t('authErrEmailTaken')
-    if (lower.includes('username already')) return t('authErrUsernameTaken')
-    if (lower.includes('passwords do not match')) return t('authErrPasswordMismatch')
-    if (lower.includes('privacy consent')) return t('authErrPrivacyConsent')
-    if (lower.includes('letters only') || lower.includes('username must contain')) return t('authErrUsernameLetters')
-    if (lower.includes('3–10') || lower.includes('3-10') || lower.includes('username must be 3')) return t('authErrUsernameLength')
-    if (lower.includes('password must be 6') || lower.includes('6–20') || lower.includes('6-20')) return t('authErrPasswordLength')
-    if (lower.includes('value is not a valid email') || (lower.includes('email') && lower.includes('valid'))) return t('authErrEmailInvalid')
-    return msg
+    if (lower.includes('email already')) return 'authErrEmailTaken'
+    if (lower.includes('username already')) return 'authErrUsernameTaken'
+    if (lower.includes('passwords do not match')) return 'authErrPasswordMismatch'
+    if (lower.includes('privacy consent')) return 'authErrPrivacyConsent'
+    if (lower.includes('letters only') || lower.includes('username must contain')) return 'authErrUsernameLetters'
+    if (lower.includes('3–10') || lower.includes('3-10') || lower.includes('username must be 3')) return 'authErrUsernameLength'
+    if (lower.includes('password must be 6') || lower.includes('6–20') || lower.includes('6-20')) return 'authErrPasswordLength'
+    if (lower.includes('value is not a valid email') || (lower.includes('email') && lower.includes('valid'))) return 'authErrEmailInvalid'
+    return 'authRegisterError'
   }
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -71,7 +86,7 @@ export default function RegisterPage() {
     } catch (err) {
       if (err instanceof ApiError) setErrors(err.errors.map(mapServerError))
       else if (err instanceof Error) setErrors([mapServerError(err.message)])
-      else setErrors([t('authRegisterError')])
+      else setErrors(['authRegisterError'])
     } finally {
       setLoading(false)
     }
@@ -85,7 +100,7 @@ export default function RegisterPage() {
         {errors.length ? (
           <ul className="auth-errors" role="alert">
             {errors.map((err) => (
-              <li key={err}>{err}</li>
+              <li key={err}>{t(err)}</li>
             ))}
           </ul>
         ) : null}

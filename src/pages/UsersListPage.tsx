@@ -15,8 +15,15 @@ export default function UsersListPage() {
   const { lang = 'ru' } = useParams()
 
   const [users, setUsers] = useState<PublicProfile[]>([])
+  const [query, setQuery] = useState('')
   const [listReady, setListReady] = useState(false)
   const [error, setError] = useState(false)
+
+  const visibleUsers = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    if (!needle) return users
+    return users.filter((user) => user.nickname.toLowerCase().includes(needle))
+  }, [users, query])
 
   const listSchema = useMemo(
     () => ({
@@ -92,9 +99,26 @@ export default function UsersListPage() {
         <p className="page-header__subtitle">{t('usersSubtitle')}</p>
       </header>
 
-      {listReady && users.length ? (
+      <form className="articles-search" role="search" onSubmit={(e) => e.preventDefault()}>
+        <label className="articles-search__label">
+          <span className="visually-hidden">{t('usersSearch')}</span>
+          <input
+            type="search"
+            className="articles-search__input"
+            placeholder={t('usersSearchPlaceholder')}
+            autoComplete="off"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+        <button type="submit" className="btn btn--primary articles-search__btn">
+          {t('usersSearch')}
+        </button>
+      </form>
+
+      {listReady && visibleUsers.length ? (
         <ul className="users-list">
-          {users.map((user) => (
+          {visibleUsers.map((user) => (
             <li key={user.user_id}>
               <Link to={`/${lang}/user/${user.user_id}`} className="users-list__row">
                 <span className="users-list__id">#{user.user_id}</span>
@@ -120,6 +144,9 @@ export default function UsersListPage() {
         </ul>
       ) : null}
       {listReady && !users.length ? <p className="state">{t('usersEmpty')}</p> : null}
+      {listReady && users.length > 0 && visibleUsers.length === 0 ? (
+        <p className="state">{t('usersSearchEmpty')}</p>
+      ) : null}
     </div>
   )
 }
