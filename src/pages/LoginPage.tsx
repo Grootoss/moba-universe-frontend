@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<'' | 'authLoginError' | 'authLoginStaffOnly'>('')
+  const [error, setError] = useState<'' | 'authLoginError' | 'authLoginStaffOnly' | 'authLoginRateLimit'>('')
   const [loading, setLoading] = useState(false)
 
   usePageTitle(t('authLoginTitle'))
@@ -29,8 +29,9 @@ export default function LoginPage() {
         return
       }
       void navigate(`/${lang}/profile`, { replace: true })
-    } catch {
-      setError('authLoginError')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message.toLowerCase() : ''
+      setError(msg.includes('too many') ? 'authLoginRateLimit' : 'authLoginError')
     } finally {
       setLoading(false)
     }

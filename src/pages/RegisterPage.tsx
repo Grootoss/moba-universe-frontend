@@ -20,6 +20,7 @@ type RegisterError =
   | 'authErrPasswordConfirmRequired'
   | 'authErrPasswordMismatch'
   | 'authErrPrivacyConsent'
+  | 'authErrIpDailyLimit'
   | 'authRegisterError'
 
 export default function RegisterPage() {
@@ -56,6 +57,7 @@ export default function RegisterPage() {
 
   const mapServerError = (msg: string): RegisterError => {
     const lower = msg.toLowerCase()
+    if (lower.includes('one account per day') || lower.includes('from this ip')) return 'authErrIpDailyLimit'
     if (lower.includes('email already')) return 'authErrEmailTaken'
     if (lower.includes('username already')) return 'authErrUsernameTaken'
     if (lower.includes('passwords do not match')) return 'authErrPasswordMismatch'

@@ -29,8 +29,9 @@ export default function AdminLoginPage() {
       }
       const redirect = searchParams.get('redirect') || '/admin'
       void navigate(redirect.startsWith('/admin') ? redirect : '/admin')
-    } catch {
-      setError(t('adminLoginError'))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message.toLowerCase() : ''
+      setError(t(msg.includes('too many') ? 'authLoginRateLimit' : 'adminLoginError'))
     } finally {
       setLoading(false)
     }

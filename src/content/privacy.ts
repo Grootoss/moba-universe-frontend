@@ -65,6 +65,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'Игры и ранги выбираются из списков Сайта и сохраняются сразу, без отдельной модерации; они могут отображаться на странице профиля вместе с одобренными данными. Каталог пользователей показывает опубликованные профили.',
           'Публикация профиля на Сайте (страница вида /user/{id}) для других посетителей возможна после модерации никнейма и текста «о себе»: администратор или модератор одобряет профиль. При отклонении вам может быть показано замечание; после правок никнейма/«о себе» вы можете снова отправить их на проверку. Повторное изменение никнейма или «о себе» после публикации снова снимает профиль с публичного показа до нового одобрения.',
           'Пароли хранятся только в виде криптографического хэша. Access- и refresh-токены используются для поддержания сессии; вы можете завершить сессию выходом из аккаунта и очисткой данных сайта в браузере.',
+          'С одного IP-адреса можно зарегистрировать не больше одной учётной записи за календарные сутки (Europe/Moscow). Для этого при успешной регистрации сохраняется IP-адрес. Неудачные попытки входа (IP и email) хранятся 15 минут и нужны только чтобы ограничить подбор пароля.',
         ],
       },
       {
@@ -238,6 +239,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'Games and ranks are chosen from Site lists and saved immediately without a separate review; they may appear on the profile page together with approved text. The user directory shows published profiles.',
           'A profile becomes public for other visitors at /user/{id} after nickname/about moderation: an administrator or moderator approves it. If rejected, you may see a note; after editing nickname/about you may submit again. Changing nickname or about after publication removes the profile from public view until it is approved again.',
           'Passwords are stored only as cryptographic hashes. Access and refresh tokens maintain your session; you can end the session by logging out and clearing site data in the browser.',
+          'One IP address can register at most one account per calendar day (Europe/Moscow). The IP is stored when registration succeeds. Failed sign-in attempts (IP and email) are kept for 15 minutes and used only to limit password guessing.',
         ],
       },
       {
