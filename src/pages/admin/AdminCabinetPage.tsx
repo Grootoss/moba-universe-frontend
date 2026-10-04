@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clearToken, fetchMe } from '../../api/admin'
+import { logout as logoutSession } from '../../api/auth'
 import { usePageTitle } from '../../hooks/usePageTitle'
 
 export default function AdminCabinetPage() {
@@ -41,8 +42,7 @@ export default function AdminCabinetPage() {
           type="button"
           className="admin-btn admin-btn--ghost"
           onClick={() => {
-            clearToken()
-            void navigate('/admin/login')
+            void logoutSession().then(() => navigate('/admin/login'))
           }}
         >
           {t('adminLogout')}

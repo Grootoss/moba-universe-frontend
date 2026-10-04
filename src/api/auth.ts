@@ -90,6 +90,21 @@ export async function register(payload: {
   return data
 }
 
+export async function logout(): Promise<void> {
+  const send = () =>
+    fetch('/api/auth/logout', { method: 'POST', headers: authHeaders() })
+  try {
+    let res = await send()
+    if (res.status === 401) {
+      const refreshed = await refreshTokens()
+      if (refreshed) res = await send()
+    }
+  } catch {
+    // Still drop the local session if the network call fails.
+  }
+  clearTokens()
+}
+
 export async function login(email: string, password: string): Promise<TokenPair> {
   const res = await fetch('/api/auth/login', {
     method: 'POST',

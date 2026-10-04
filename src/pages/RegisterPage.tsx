@@ -48,7 +48,7 @@ export default function RegisterPage() {
     else if (nick.length < 3 || nick.length > 10) list.push('authErrUsernameLength')
     else if (!USERNAME_RE.test(nick)) list.push('authErrUsernameLetters')
     if (!password) list.push('authErrPasswordRequired')
-    else if (password.length < 6 || password.length > 20) list.push('authErrPasswordLength')
+    else if (password.length < 6 || password.length > 72) list.push('authErrPasswordLength')
     if (!passwordConfirm) list.push('authErrPasswordConfirmRequired')
     else if (password !== passwordConfirm) list.push('authErrPasswordMismatch')
     if (!privacyConsent) list.push('authErrPrivacyConsent')
@@ -64,7 +64,7 @@ export default function RegisterPage() {
     if (lower.includes('privacy consent')) return 'authErrPrivacyConsent'
     if (lower.includes('letters only') || lower.includes('username must contain')) return 'authErrUsernameLetters'
     if (lower.includes('3–10') || lower.includes('3-10') || lower.includes('username must be 3')) return 'authErrUsernameLength'
-    if (lower.includes('password must be 6') || lower.includes('6–20') || lower.includes('6-20')) return 'authErrPasswordLength'
+    if (lower.includes('password must be 6') || lower.includes('6–72') || lower.includes('6-72') || lower.includes('6–20') || lower.includes('6-20')) return 'authErrPasswordLength'
     if (lower.includes('value is not a valid email') || (lower.includes('email') && lower.includes('valid'))) return 'authErrEmailInvalid'
     return 'authRegisterError'
   }
@@ -127,7 +127,7 @@ export default function RegisterPage() {
           <input
             type="password"
             autoComplete="new-password"
-            maxLength={20}
+            maxLength={72}
             placeholder={t('authPasswordHint')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -138,7 +138,7 @@ export default function RegisterPage() {
           <input
             type="password"
             autoComplete="new-password"
-            maxLength={20}
+            maxLength={72}
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}
           />

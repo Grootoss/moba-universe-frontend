@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchPublicProfile } from '../api/admin'
+import { fetchMe, getAccessToken } from '../api/auth'
+import { requestUserContacts } from '../api/profile'
 import ErrorState from '../components/ErrorState'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
@@ -19,6 +21,9 @@ export default function UserProfilePage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [meId, setMeId] = useState<number | null>(getAccessToken() ? 0 : null)
+  const [requesting, setRequesting] = useState(false)
+  const [requestError, setRequestError] = useState('')
 
   const userId = Number(id)
   const isApproved = profile?.moderation_status === 'approved'
@@ -43,6 +48,16 @@ export default function UserProfilePage() {
   )
   useJsonLd(profileSchema)
   usePrerenderReady(!loading)
+
+  useEffect(() => {
+    if (!getAccessToken()) {
+      setMeId(null)
+      return
+    }
+    void fetchMe()
+      .then((me) => setMeId(me.id))
+      .catch(() => setMeId(null))
+  }, [])
 
   useEffect(() => {
     const load = async () => {
@@ -111,6 +126,59 @@ export default function UserProfilePage() {
       <section className="profile-bio">
         <h2 className="profile-section__title">{t('profileBio')}</h2>
         <p className="profile-bio__text">{profile.bio}</p>
+      </section>
+
+      <section className="profile-contacts-block">
+        <h2 className="profile-section__title">{t('contactsTitle')}</h2>
+        {profile.contacts?.length ? (
+          <ul className="profile-contacts">
+            {profile.contacts.map((c) => (
+              <li key={c.label}>
+                <a href={c.url} target="_blank" rel="noreferrer">
+                  {c.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="profile-bio__text">{t('contactsModalEmpty')}</p>
+        )}
+        {meId !== null && meId > 0 && meId !== profile.user_id && profile.contact_status !== 'accepted' ? (
+          profile.contact_status === 'pending' ? (
+            <p className="profile-bio__text">{t('contactsPendingOut')}</p>
+          ) : (
+            <>
+              {profile.contact_status === 'declined' ? (
+                <p className="profile-bio__text">{t('contactsDeclined')}</p>
+              ) : null}
+              <button
+                type="button"
+                className="admin-btn"
+                disabled={requesting}
+                onClick={() => {
+                  setRequesting(true)
+                  setRequestError('')
+                  void requestUserContacts(profile.user_id)
+                    .then(() => fetchPublicProfile(profile.user_id))
+                    .then(setProfile)
+                    .catch(() => setRequestError(t('contactsRequestError')))
+                    .finally(() => setRequesting(false))
+                }}
+              >
+                {requesting ? t('loading') : t('contactsRequest')}
+              </button>
+              {requestError ? <p className="admin-login__error">{requestError}</p> : null}
+            </>
+          )
+        ) : null}
+        {meId === null ? (
+          <p className="profile-bio__text">
+            <Link to={`/${lang}/login`}>{t('contactsLoginToRequest')}</Link>
+          </p>
+        ) : null}
+        {profile.contact_status === 'accepted' ? (
+          <p className="profile-bio__text">{t('contactsAlreadyConnected')}</p>
+        ) : null}
       </section>
 
       {profile.games.length ? (

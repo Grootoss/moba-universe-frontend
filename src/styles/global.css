@@ -390,9 +390,9 @@ button {
   color: var(--text-faint);
 }
 
-.lang-switch--menu {
+.lang-switch.lang-switch--menu {
   font-size: 0.875rem;
-  gap: 0.35rem;
+  gap: 4px;
 }
 
 .lang-switch--menu .lang-switch__btn {
@@ -1733,10 +1733,14 @@ body.has-cookie-banner {
 }
 
 .users-list__row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "id nick"
+    "ranks ranks";
   align-items: baseline;
-  gap: 0.5rem 1rem;
+  column-gap: 0.75rem;
+  row-gap: 0.2rem;
   padding: 0.875rem 1rem;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -1754,7 +1758,7 @@ body.has-cookie-banner {
 }
 
 .users-list__id {
-  flex-shrink: 0;
+  grid-area: id;
   font-family: 'Outfit', sans-serif;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -1762,23 +1766,24 @@ body.has-cookie-banner {
 }
 
 .users-list__nick {
-  flex: 0 1 auto;
+  grid-area: nick;
   min-width: 0;
   font-weight: 600;
   font-size: 0.98rem;
+  line-height: 1.35;
 }
 
 .users-list__ranks {
-  flex: 1 1 auto;
+  grid-area: ranks;
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.75rem 1.25rem;
+  justify-content: flex-start;
+  gap: 0.35rem 1.25rem;
   min-width: 0;
   font-size: 0.875rem;
   color: var(--text-muted);
   line-height: 1.45;
-  text-align: right;
+  text-align: left;
 }
 
 /* ── Admin layout ── */
@@ -2553,16 +2558,32 @@ body.has-cookie-banner {
   line-height: 1.45;
 }
 
+/* First screen is the home content. The footer starts on the next screen. */
+.layout:has(.home-page) .layout__main {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height));
+  min-height: calc(100dvh - var(--header-height));
+  padding-bottom: 0;
+}
+
+.home-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .users-list__game {
   display: grid;
   gap: 0.15rem;
-  justify-items: end;
+  justify-items: start;
 }
 
 .users-list__game-head {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: baseline;
   gap: 0.35rem 0.55rem;
 }
@@ -2736,6 +2757,49 @@ body.has-cookie-banner {
 }
 
 .contact-modal__empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.profile-contacts {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.cabinet__contact-row {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.cabinet__contact-public {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cabinet__requests {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+}
+
+.cabinet__request {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.cabinet__request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cabinet__request-status {
   margin: 0;
   color: var(--text-muted);
 }

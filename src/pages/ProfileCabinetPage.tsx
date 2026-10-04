@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { clearTokens, fetchMe, getAccessToken } from '../api/auth'
+import { clearTokens, fetchMe, getAccessToken, logout as logoutSession } from '../api/auth'
 import {
+  acceptContactRequest,
   cancelOwnProfile,
+  declineContactRequest,
+  fetchMyContacts,
   fetchOwnProfile,
   fetchProfileOptions,
   submitOwnProfile,
+  updateOwnContacts,
   updateOwnGames,
   updateOwnProfile,
 } from '../api/profile'
-import type { AuthUser, OwnProfile, ProfileOptions } from '../types/profile'
+import type { AuthUser, ContactsList, OwnProfile, ProfileOptions, SocialContact } from '../types/profile'
 import { usePageTitle } from '../hooks/usePageTitle'
 
 type GameRow = { game: string; rank: string; sort_order: number }
@@ -27,6 +31,13 @@ export default function ProfileCabinetPage() {
   const [savingText, setSavingText] = useState(false)
   const [savingGames, setSavingGames] = useState(false)
   const [gamesNotice, setGamesNotice] = useState('')
+  const [telegramUrl, setTelegramUrl] = useState('')
+  const [telegramPublic, setTelegramPublic] = useState(false)
+  const [discordUrl, setDiscordUrl] = useState('')
+  const [discordPublic, setDiscordPublic] = useState(false)
+  const [savingContacts, setSavingContacts] = useState(false)
+  const [contactsNotice, setContactsNotice] = useState('')
+  const [contactBox, setContactBox] = useState<ContactsList | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [nickname, setNickname] = useState('')
@@ -59,6 +70,14 @@ export default function ProfileCabinetPage() {
     setProfile(p)
     setNickname(p.nickname || '')
     setBio(p.bio || '')
+    const byLabel = (label: string) =>
+      (p.contacts || []).find((c) => c.label.toLowerCase() === label)
+    const telegram = byLabel('telegram')
+    const discord = byLabel('discord')
+    setTelegramUrl(telegram?.url || '')
+    setTelegramPublic(Boolean(telegram?.is_public))
+    setDiscordUrl(discord?.url || '')
+    setDiscordPublic(Boolean(discord?.is_public))
     if (!mode.keepGames) {
       const mapped = (Array.isArray(p.games) ? p.games : []).map((g, i) => ({
         game: g.game,
@@ -87,8 +106,9 @@ export default function ProfileCabinetPage() {
     setLoading(true)
     setError('')
     try {
-      const [opts, own] = await Promise.all([fetchProfileOptions(), fetchOwnProfile()])
+      const [opts, own, box] = await Promise.all([fetchProfileOptions(), fetchOwnProfile(), fetchMyContacts()])
       setOptions(opts)
+      setContactBox(box)
       applyProfile(own, opts)
     } catch (e) {
       setProfile(null)
@@ -157,6 +177,61 @@ export default function ProfileCabinetPage() {
     }
   }
 
+  const contactPayload = () => {
+    const rows: SocialContact[] = []
+    const telegram = telegramUrl.trim()
+    const discord = discordUrl.trim()
+    if (telegram && !/^https?:\/\//i.test(telegram)) return null
+    if (discord && !/^https?:\/\//i.test(discord)) return null
+    if (telegram) rows.push({ label: 'Telegram', url: telegram, is_public: telegramPublic })
+    if (discord) rows.push({ label: 'Discord', url: discord, is_public: discordPublic })
+    return rows
+  }
+
+  const onSaveContacts = async () => {
+    const rows = contactPayload()
+    if (!rows) {
+      setError(t('contactsUrlInvalid'))
+      return
+    }
+    setSavingContacts(true)
+    setContactsNotice('')
+    setError('')
+    setSuccess('')
+    try {
+      applyProfile(await updateOwnContacts({ contacts: rows }), options, { keepGames: true })
+      setContactsNotice(t('contactsSaved'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('adminSaveError'))
+    } finally {
+      setSavingContacts(false)
+    }
+  }
+
+  const refreshContacts = async () => {
+    setContactBox(await fetchMyContacts())
+  }
+
+  const onAcceptRequest = async (requestId: number) => {
+    setError('')
+    try {
+      await acceptContactRequest(requestId)
+      await refreshContacts()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('contactsRequestError'))
+    }
+  }
+
+  const onDeclineRequest = async (requestId: number) => {
+    setError('')
+    try {
+      await declineContactRequest(requestId)
+      await refreshContacts()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('contactsRequestError'))
+    }
+  }
+
   const onCancelReview = async () => {
     setSavingText(true)
     setError('')
@@ -189,8 +264,7 @@ export default function ProfileCabinetPage() {
   }
 
   const logout = () => {
-    clearTokens()
-    void navigate(`/${lang}/login`)
+    void logoutSession().then(() => navigate(`/${lang}/login`))
   }
 
   if (loading) return <div className="page cabinet"><p className="state">{t('loading')}</p></div>
@@ -385,6 +459,114 @@ export default function ProfileCabinetPage() {
                 </p>
               ) : null}
             </div>
+          </section>
+
+          <section className="cabinet__block">
+            <h2 className="cabinet__block-title">{t('contactsTitle')}</h2>
+            <p className="cabinet__block-hint">{t('contactsEditHint')}</p>
+            <div className="cabinet__form">
+              <div className="cabinet__contact-row">
+                <label className="admin-field">
+                  <span>Telegram</span>
+                  <input
+                    type="url"
+                    placeholder="https://t.me/username"
+                    value={telegramUrl}
+                    onChange={(e) => setTelegramUrl(e.target.value)}
+                  />
+                </label>
+                <label className="cabinet__contact-public">
+                  <input type="checkbox" checked={telegramPublic} onChange={(e) => setTelegramPublic(e.target.checked)} />
+                  <span>{t('contactsPublic')}</span>
+                </label>
+              </div>
+              <div className="cabinet__contact-row">
+                <label className="admin-field">
+                  <span>Discord</span>
+                  <input
+                    type="url"
+                    placeholder="https://discord.gg/example"
+                    value={discordUrl}
+                    onChange={(e) => setDiscordUrl(e.target.value)}
+                  />
+                </label>
+                <label className="cabinet__contact-public">
+                  <input type="checkbox" checked={discordPublic} onChange={(e) => setDiscordPublic(e.target.checked)} />
+                  <span>{t('contactsPublic')}</span>
+                </label>
+              </div>
+              <div className="cabinet__actions">
+                <button type="button" className="admin-btn" disabled={savingContacts} onClick={() => void onSaveContacts()}>
+                  {savingContacts ? t('loading') : t('contactsSave')}
+                </button>
+              </div>
+              {contactsNotice ? (
+                <p className="cabinet__notice" role="status">
+                  {contactsNotice}
+                </p>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="cabinet__block">
+            <h2 className="cabinet__block-title">{t('contactsIncoming')}</h2>
+            <p className="cabinet__block-hint">{t('contactsHint')}</p>
+            {contactBox && contactBox.incoming.length ? (
+              <ul className="cabinet__requests">
+                {contactBox.incoming.map((item) => (
+                  <li key={item.request_id} className="cabinet__request">
+                    <Link to={`/${lang}/user/${item.user_id}`}>{item.nickname}</Link>
+                    {item.status === 'pending' ? (
+                      <div className="cabinet__request-actions">
+                        <button type="button" className="admin-btn" onClick={() => void onAcceptRequest(item.request_id)}>
+                          {t('contactsAccept')}
+                        </button>
+                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => void onDeclineRequest(item.request_id)}>
+                          {t('contactsDecline')}
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="cabinet__request-status">
+                        {item.status === 'accepted' ? t('contactsSentOk') : t('contactsDeclined')}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="cabinet__block-hint">{t('contactsEmptyIncoming')}</p>
+            )}
+
+            <h2 className="cabinet__block-title">{t('contactsOutgoing')}</h2>
+            {contactBox && contactBox.outgoing.length ? (
+              <ul className="cabinet__requests">
+                {contactBox.outgoing.map((item) => (
+                  <li key={item.request_id} className="cabinet__request">
+                    <Link to={`/${lang}/user/${item.user_id}`}>{item.nickname}</Link>
+                    <p className="cabinet__request-status">
+                      {item.status === 'accepted'
+                        ? t('contactsAlreadyConnected')
+                        : item.status === 'declined'
+                          ? t('contactsDeclined')
+                          : t('contactsPendingOut')}
+                    </p>
+                    {item.contacts?.length ? (
+                      <ul className="profile-contacts">
+                        {item.contacts.map((c) => (
+                          <li key={c.label}>
+                            <a href={c.url} target="_blank" rel="noreferrer">
+                              {c.label}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="cabinet__block-hint">{t('contactsEmptyOutgoing')}</p>
+            )}
           </section>
         </>
       ) : null}

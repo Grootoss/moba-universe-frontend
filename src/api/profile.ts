@@ -1,7 +1,10 @@
 import { authHeaders, refreshTokens } from './auth'
 import type {
   AdminProfile,
+  ContactItem,
+  ContactsList,
   OwnProfile,
+  ProfileContactsPayload,
   ProfileGamesPayload,
   ProfileOptions,
   ProfileUpdatePayload,
@@ -63,6 +66,40 @@ export async function submitOwnProfile(): Promise<OwnProfile> {
 
 export async function cancelOwnProfile(): Promise<OwnProfile> {
   const res = await authFetch('/api/me/profile/cancel', { method: 'POST' })
+  if (!res.ok) throw new Error(await parseError(res))
+  return res.json()
+}
+
+export async function updateOwnContacts(body: ProfileContactsPayload): Promise<OwnProfile> {
+  const res = await authFetch('/api/me/profile/contacts', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(await parseError(res))
+  return res.json()
+}
+
+export async function fetchMyContacts(): Promise<ContactsList> {
+  const res = await authFetch('/api/me/contacts')
+  if (!res.ok) throw new Error(await parseError(res))
+  return res.json()
+}
+
+export async function requestUserContacts(userId: number): Promise<ContactItem> {
+  const res = await authFetch(`/api/users/${userId}/contact-request`, { method: 'POST' })
+  if (!res.ok) throw new Error(await parseError(res))
+  return res.json()
+}
+
+export async function acceptContactRequest(requestId: number): Promise<ContactItem> {
+  const res = await authFetch(`/api/me/contacts/${requestId}/accept`, { method: 'POST' })
+  if (!res.ok) throw new Error(await parseError(res))
+  return res.json()
+}
+
+export async function declineContactRequest(requestId: number): Promise<ContactItem> {
+  const res = await authFetch(`/api/me/contacts/${requestId}/decline`, { method: 'POST' })
   if (!res.ok) throw new Error(await parseError(res))
   return res.json()
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { fetchArticle, fetchArticlesPage } from '../api/articles'
+import { fetchArticle, fetchArticles } from '../api/articles'
 import ErrorState from '../components/ErrorState'
 import FadeImage from '../components/FadeImage'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -9,8 +9,23 @@ import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { formatArticleDate } from '../utils/formatDate'
 import { isPrerender, siteOrigin } from '../utils/prerender'
-import { absoluteMediaUrl, resolveMediaUrl } from '../utils/mediaUrl'
+import { absoluteMediaUrl, resolveMediaUrl, resolvePromoCoverUrl } from '../utils/mediaUrl'
 import type { Article, ArticlePreview, Lang } from '../types/article'
+
+function pickRelated(items: ArticlePreview[], slug: string): ArticlePreview[] {
+  const ordered = items
+    .filter((item) => item.slug)
+    .slice()
+    .sort((a, b) => a.id_article - b.id_article || a.slug.localeCompare(b.slug))
+  const index = ordered.findIndex((item) => item.slug === slug)
+  const start = index < 0 ? -1 : index
+  const picks: ArticlePreview[] = []
+  for (let step = 1; picks.length < 3 && step < ordered.length; step += 1) {
+    const item = ordered[(start + step) % ordered.length]
+    if (item.slug !== slug) picks.push(item)
+  }
+  return picks
+}
 
 function readBoot(slug: string): { article: Article; related: ArticlePreview[] } | null {
   const el = document.getElementById('__BOOT__')
@@ -117,13 +132,9 @@ export default function ArticlePage() {
         const current = boot?.article ?? (await fetchArticle(slug))
         if (cancelled) return
         if (!boot) setArticle(current)
-        const all = await fetchArticlesPage({
-          lang: lang === 'en' ? 'en' : 'ru',
-          page: 1,
-          pageSize: 12,
-        })
+        const all = await fetchArticles(lang === 'en' ? 'en' : 'ru')
         if (cancelled) return
-        setRelated(all.items.filter((item) => item.slug !== current.slug).slice(0, 3))
+        setRelated(pickRelated(all, current.slug))
       } catch {
         if (cancelled || boot) return
         setError(true)
@@ -190,6 +201,10 @@ export default function ArticlePage() {
                 height={675}
                 loading="eager"
                 fetchPriority="high"
+                sources={[
+                  { media: '(max-width: 767px)', src: resolvePromoCoverUrl(article?.cover_image, 'mobile') || '' },
+                  { media: '(max-width: 1023px)', src: resolvePromoCoverUrl(article?.cover_image, 'tablet') || '' },
+                ]}
               />
             </figure>
           ) : null}

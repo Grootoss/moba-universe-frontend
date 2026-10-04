@@ -1,5 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
+type Source = { media: string; src: string }
+
 type Props = {
   src: string
   alt?: string
@@ -8,6 +10,7 @@ type Props = {
   className?: string
   loading?: 'eager' | 'lazy'
   fetchPriority?: 'high' | 'low' | 'auto'
+  sources?: Source[]
   onError?: () => void
 }
 
@@ -19,6 +22,7 @@ export default function FadeImage({
   className,
   loading = 'lazy',
   fetchPriority,
+  sources,
   onError,
 }: Props) {
   const ref = useRef<HTMLImageElement>(null)
@@ -30,7 +34,7 @@ export default function FadeImage({
     if (el && el.complete && el.naturalWidth > 0) setLoaded(true)
   }, [src])
 
-  return (
+  const img = (
     <img
       ref={ref}
       src={src}
@@ -44,5 +48,17 @@ export default function FadeImage({
       onLoad={() => setLoaded(true)}
       onError={onError}
     />
+  )
+
+  const usable = (sources || []).filter((item) => item.src)
+  if (!usable.length) return img
+
+  return (
+    <picture>
+      {usable.map((item) => (
+        <source key={item.media} media={item.media} srcSet={item.src} />
+      ))}
+      {img}
+    </picture>
   )
 }

@@ -19,6 +19,16 @@ export function absoluteMediaUrl(path?: string | null): string | null {
   return `${origin.replace(/\/$/, '')}${resolved}`
 }
 
+/** 16:9 crop generated from a local /images cover. Null for remote URLs. */
+export function resolvePromoCoverUrl(cover?: string | null, kind: 'mobile' | 'tablet' = 'mobile'): string | null {
+  const src = resolveMediaUrl(cover)
+  if (!src) return null
+  const local = src.match(/^\/images\/([^/]+)$/)
+  if (!local) return null
+  const stem = local[1].replace(/\.[^.]+$/, '')
+  return `/images/promo/${kind}/${stem}.jpg`
+}
+
 /** Small list thumbnail — never point at the original full-size cover. */
 export function resolveListCoverUrl(cover?: string | null, thumb?: string | null): string | null {
   const explicit = resolveMediaUrl(thumb)

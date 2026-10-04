@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import FadeImage from './FadeImage'
 import { formatArticleDate } from '../utils/formatDate'
-import { resolveListCoverUrl } from '../utils/mediaUrl'
+import { resolveListCoverUrl, resolvePromoCoverUrl } from '../utils/mediaUrl'
 
 type Props = {
   slug: string
@@ -42,6 +42,10 @@ export default function ArticleCard({
               height={126}
               loading={index < 12 ? 'eager' : 'lazy'}
               fetchPriority={index < 4 ? 'high' : 'auto'}
+              sources={[
+                { media: '(max-width: 767px)', src: resolvePromoCoverUrl(coverImage, 'mobile') || '' },
+                { media: '(max-width: 1023px)', src: resolvePromoCoverUrl(coverImage, 'tablet') || '' },
+              ]}
               onError={() => setThumbFailed(true)}
             />
           </div>
