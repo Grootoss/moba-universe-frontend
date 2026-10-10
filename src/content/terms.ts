@@ -15,7 +15,7 @@ export interface TermsDoc {
 export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
   ru: {
     title: 'Условия использования',
-    updatedLabel: 'Дата обновления: 22.08.2026',
+    updatedLabel: 'Дата обновления: 05.10.2026',
     intro:
       'Moba Universe — неофициальный fan-made сайт об MOBA-играх: главная страница, гайды и личные страницы пользователей. Мы не связаны с Moonton Technology Co., Ltd. и не одобрены ею. Материалы носят образовательный и информационный характер для игроков.',
     sections: [
@@ -40,7 +40,8 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
         paragraphs: [
           'Публичные профили создаются пользователями и проходят модерацию перед публикацией.',
           'Ранги и игры в профиле указываются пользователем добровольно. Сайт не проверяет игровые аккаунты и не связан с игровыми серверами.',
-          'Не публикуйте чужие контакты и не используйте Сайт для спама, мошенничества или нарушения закона.',
+          'В контактах профиля можно указать только Telegram и Discord. Ссылку с отметкой «показывать всем» видят посетители опубликованного профиля. Скрытую ссылку видит только пользователь, чей запрос на контакты вы приняли. Не публикуйте чужие контакты, не рассылайте запросы массово и не используйте Сайт для спама, мошенничества или нарушения закона.',
+          'С одного IP-адреса можно зарегистрировать не больше одной учётной записи за календарные сутки. Серия неудачных входов временно останавливает новые попытки.',
         ],
       },
       {
@@ -68,7 +69,7 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
   },
   en: {
     title: 'Terms of Use',
-    updatedLabel: 'Last updated: 22 Aug 2026',
+    updatedLabel: 'Last updated: 05.10.2026',
     intro:
       'Moba Universe is an unofficial fan-made website about MOBA games: a homepage, guides, and personal player pages. We are not affiliated with or endorsed by Moonton Technology Co., Ltd. Materials are for educational and informational purposes for players.',
     sections: [
@@ -93,7 +94,8 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
         paragraphs: [
           'Public profiles are created by users and reviewed before publication.',
           'Ranks and games in profiles are self-reported. The Site does not verify game accounts and is not connected to game servers.',
-          'Do not publish someone else’s contacts or use the Site for spam, fraud, or illegal activity.',
+          'Profile contacts may be Telegram and Discord only. A link marked visible to everyone is shown on a published profile. A private link is shown only to a user whose contact request you accept. Do not publish someone else’s contacts, do not send requests in bulk, and do not use the Site for spam, fraud, or illegal activity.',
+          'One IP address may register at most one account per calendar day. A run of failed sign-ins temporarily stops further attempts.',
         ],
       },
       {

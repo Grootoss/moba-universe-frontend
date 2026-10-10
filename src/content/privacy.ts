@@ -17,7 +17,7 @@ export interface PrivacyDoc {
 export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
   ru: {
     title: 'Политика конфиденциальности',
-    updatedLabel: 'Дата обновления: 22.08.2026',
+    updatedLabel: 'Дата обновления: 05.10.2026',
     intro:
       'Настоящая Политика определяет порядок обработки и защиты персональных данных пользователей сайта Moba Universe (далее — «Сайт») — неофициального fan-made ресурса с главной страницей, гайдами по MOBA-играм, каталогом пользователей и личными страницами игроков, а также сервисом регистрации, авторизации и личного кабинета. Политика составлена с учётом требований Федерального закона РФ от 27.07.2006 № 152-ФЗ «О персональных данных», иных применимых норм РФ и, где применимо, правил прозрачности использования cookies и положений GDPR для посетителей из ЕС/ЕЭЗ.',
     sections: [
@@ -47,8 +47,9 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'В зависимости от ваших действий и согласия могут обрабатываться следующие категории данных:',
         ],
         list: [
-          'Данные учётной записи при регистрации и входе: адрес электронной почты (email), никнейм (логин), хэш пароля (сам пароль в открытом виде не хранится), роль учётной записи (пользователь / модератор / администратор)',
+          'Данные учётной записи при регистрации и входе: адрес электронной почты (email, по нему выполняется вход), имя пользователя (username: 3–10 букв, не является адресом для входа), хэш пароля (сам пароль в открытом виде не хранится), роль учётной записи (пользователь / модератор / администратор)',
           'Данные профиля: никнейм для отображения и текст «о себе» (проходят модерацию перед публикацией и при повторном изменении после одобрения); выбранные MOBA-игры и ранги из справочника Сайта (сохраняются сразу и могут обновляться без отдельной модерации); статус модерации (черновик / на проверке / одобрен / отклонён); замечания модератора (при отклонении); признак публичности профиля',
+          'Контакты профиля: ссылки Telegram и Discord и признак, показывать ли ссылку всем. Заявки на обмен контактами: кто отправил запрос, кому, статус (ожидает / принято / отклонено)',
           'Технические данные сессии авторизации: JWT access/refresh-токены на стороне клиента (браузер) и служебные сведения для проверки токена на сервере',
           'Технические данные визита: IP-адрес, тип и версия браузера (User-Agent), язык, приблизительные данные об устройстве и экране, дата и время визита, URL страниц, referrer — могут фиксироваться в журналах веб-сервера/хостинга при обращении к Сайту, а также собираться Яндекс.Метрикой при наличии согласия на аналитику',
           'Данные об использовании Сайта: просмотры страниц, клики, глубина просмотра, отказы (при включённой аналитике)',
@@ -60,7 +61,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Регистрация, авторизация и профили',
         paragraphs: [
-          'Для создания учётной записи вы указываете email, никнейм и пароль и подтверждаете согласие на обработку персональных данных. Email используется как идентификатор для входа и связи по вопросам аккаунта и модерации. Вход пользователей выполняется через страницу входа Сайта; служебный вход персонала (администратор / модератор) — через отдельную страницу администрирования.',
+          'Для создания учётной записи вы указываете email, имя пользователя и пароль и подтверждаете согласие на обработку персональных данных. Вход выполняется по email. Имя пользователя — отдельное поле из букв; никнейм на публичной странице задаётся в профиле и может не совпадать с ним. Email также используется для связи по вопросам аккаунта и модерации. Вход пользователей выполняется через страницу входа Сайта; служебный вход персонала (администратор / модератор) — через отдельную страницу администрирования.',
           'После регистрации вы попадаете в личный кабинет. Никнейм и текст «о себе» вы отправляете на проверку: пока заявка на проверке, эти поля доступны вам только для просмотра. До публикации вы можете открыть превью своей страницы профиля — оно доступно только вам как владельцу учётной записи (а также персоналу Сайта) и не является публичной страницей для других посетителей.',
           'Игры и ранги выбираются из списков Сайта и сохраняются сразу, без отдельной модерации; они могут отображаться на странице профиля вместе с одобренными данными. Каталог пользователей показывает опубликованные профили.',
           'В контактах профиля можно указать только Telegram и Discord. Ссылка видна всем, если вы отметили её как публичную. Иначе её видит только пользователь, чей запрос на контакты вы приняли.',
@@ -123,7 +124,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Срок хранения',
         paragraphs: [
-          'Данные учётной записи и профиля хранятся, пока аккаунт активен либо до удаления/блокирования по вашему запросу или по инициативе оператора при нарушении правил/закона, а также в сроки, необходимые для исполнения обязанностей оператора.',
+          'Данные учётной записи, профиля, контактов и заявок на обмен контактами хранятся, пока аккаунт активен либо до удаления/блокирования по вашему запросу или по инициативе оператора при нарушении правил/закона, а также в сроки, необходимые для исполнения обязанностей оператора. IP успешной регистрации хранится вместе с учётной записью. Записи неудачных попыток входа удаляются по истечении 15 минут.',
           'Настройки языка, темы, согласия и токены сессии хранятся в вашем браузере до выхода, удаления вами (localStorage) или очистки данных сайта.',
           'Срок хранения данных в Яндекс.Метрике определяется настройками счётчика и политикой Яндекса.',
         ],
@@ -154,7 +155,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Защита данных',
         paragraphs: [
-          'Оператор принимает организационные и технические меры, направленные на предотвращение несанкционированного доступа к данным: разграничение доступа по ролям, хранение паролей в виде хэша, использование защищённого соединения (HTTPS) на публичном сайте, ограничение прав администраторов/модераторов. HTML гайдов публикуется персоналом и отображается как доверенный редакционный контент.',
+          'Оператор принимает организационные и технические меры, направленные на предотвращение несанкционированного доступа к данным: разграничение доступа по ролям, хранение паролей в виде хэша, отзыв токенов при выходе, ограничение числа регистраций и попыток входа, использование защищённого соединения (HTTPS) на публичном сайте, ограничение прав администраторов/модераторов. HTML гайдов на публичных страницах очищается от скриптов и опасной разметки перед показом.',
           'Полностью исключить риски в сети Интернет невозможно; рекомендуем использовать уникальный пароль, актуальный браузер и не передавать учётные данные третьим лицам.',
         ],
       },
@@ -174,7 +175,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'Если к вам применяется Общий регламент по защите данных (GDPR), дополнительно действует следующее:',
         ],
         list: [
-          'Категории данных: email, никнейм, хэш пароля, данные профиля, технические и аналитические данные — как описано выше',
+          'Категории данных: email, имя пользователя, хэш пароля, данные профиля, ссылки Telegram и Discord, заявки на обмен контактами, технические и аналитические данные — как описано выше',
           'Цели и основания: согласие (регистрация, аналитика); выполнение договора/запроса сервиса для работы кабинета и профиля; законный интерес/необходимость функции — для базовых настроек интерфейса, где применимо',
           'Возраст согласия: если вы не достигли возраста цифрового согласия в вашей стране (часто 13–16 лет), регистрация и предоставление данных должны осуществляться с участием/согласием законного представителя',
           'Яндекс.Метрика и аналитические cookies запускаются только после явного согласия («Принять»)',
@@ -194,7 +195,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
   },
   en: {
     title: 'Privacy Policy',
-    updatedLabel: 'Last updated: 22.08.2026',
+    updatedLabel: 'Last updated: 05.10.2026',
     intro:
       'This Privacy Policy explains how Moba Universe (the “Site”) — an unofficial fan-made resource with a homepage, MOBA guides, a user directory, public player pages, registration, authentication, and a personal cabinet — processes and protects personal data. It is prepared with regard to Russian Federal Law No. 152-FZ “On Personal Data”, other applicable Russian rules, cookie transparency practices, and, where applicable, the GDPR for visitors from the EU/EEA.',
     sections: [
@@ -222,8 +223,9 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
         title: 'Data we process',
         paragraphs: ['Depending on your actions and consent, we may process:'],
         list: [
-          'Account data on registration and login: email address, nickname (username), password hash (the password itself is not stored in plain text), account role (user / moderator / administrator)',
+          'Account data on registration and login: email address (used to sign in), username (3–10 letters, not the sign-in identifier), password hash (the password itself is not stored in plain text), account role (user / moderator / administrator)',
           'Profile data: display nickname and “about” text (moderated before publishing and again if changed after approval); selected MOBA games and ranks from the Site catalog (saved immediately and may update without a separate review); moderation status (draft / pending / approved / rejected); moderator notes (on rejection); public visibility flag',
+          'Profile contacts: Telegram and Discord links and whether each link is public. Contact-exchange requests: who asked, whom they asked, and the status (pending / accepted / declined)',
           'Auth session data: JWT access/refresh tokens on the client (browser) and server-side token validation data',
           'Technical visit data: IP address, browser type/version (User-Agent), language, approximate device/screen data, visit date/time, page URLs, referrer — may appear in web server/hosting logs when you use the Site, and may be collected by Yandex Metrika if you consent to analytics',
           'Usage data: page views, clicks, engagement metrics (when analytics is enabled)',
@@ -235,7 +237,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Registration, authentication, and profiles',
         paragraphs: [
-          'To create an account you provide an email, nickname, and password and confirm consent to personal data processing. Email is used as the login identifier and for account/moderation-related communication. Regular users sign in via the Site login page; staff (administrator / moderator) use a separate administration login page.',
+          'To create an account you provide an email, a username, and a password and confirm consent to personal data processing. Sign-in uses the email. The username is a separate letters-only field; the public display nickname is set on the profile and may differ. Email is also used for account and moderation messages. Regular users sign in via the Site login page; staff (administrator / moderator) use a separate administration login page.',
           'After registration you open the personal cabinet. Nickname and “about” text are submitted for review; while under review those fields are view-only for you. Before publication you may open a preview of your profile page — available only to you as the account owner (and Site staff), not a public page for other visitors.',
           'Games and ranks are chosen from Site lists and saved immediately without a separate review; they may appear on the profile page together with approved text. The user directory shows published profiles.',
           'Profile contacts are limited to Telegram and Discord. A link is visible to everyone only if you mark it public. Otherwise only a user whose contact request you accept can see it.',
@@ -296,7 +298,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Retention',
         paragraphs: [
-          'Account and profile data are kept while the account is active, or until deletion/blocking upon your request or by the operator for violations of rules/law, and for periods required to meet legal duties.',
+          'Account, profile, contact, and contact-request data are kept while the account is active, or until deletion/blocking upon your request or by the operator for violations of rules/law, and for periods required to meet legal duties. The IP of a successful registration is stored with the account. Failed sign-in records are deleted after 15 minutes.',
           'Language, theme, consent, and session tokens remain in your browser until logout, manual removal, or clearing site data.',
           'Retention in Yandex Metrika follows the counter settings and Yandex policy.',
         ],
@@ -325,7 +327,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Security',
         paragraphs: [
-          'The operator applies organizational and technical measures to reduce unauthorized access: access control by role, password hashing, HTTPS on the public Site, and limited admin/moderator privileges. Editorial guide HTML is published by staff and rendered as trusted content.',
+          'The operator applies organizational and technical measures to reduce unauthorized access: access control by role, password hashing, token revocation on logout, limits on registrations and sign-in attempts, HTTPS on the public Site, and limited admin/moderator privileges. Public guide HTML is stripped of scripts and unsafe markup before it is shown.',
           'Internet risks cannot be eliminated entirely; use a unique password, an up-to-date browser, and do not share credentials.',
         ],
       },
@@ -345,7 +347,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'If the GDPR applies to you, the following also applies:',
         ],
         list: [
-          'Data categories: email, nickname, password hash, profile data, technical and analytics data — as described above',
+          'Data categories: email, username, password hash, profile data, Telegram and Discord links, contact-exchange requests, technical and analytics data — as described above',
           'Purposes and bases: consent (registration, analytics); performance of a requested service for the cabinet/profile; and, where applicable, necessity for basic interface preferences',
           'Age of consent: if you are below the digital age of consent in your country (often 13–16), registration and data submission should involve parent/guardian consent',
           'Yandex Metrika and analytical cookies run only after explicit consent (“Accept”)',
