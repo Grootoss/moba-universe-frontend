@@ -15,9 +15,9 @@ export interface TermsDoc {
 export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
   ru: {
     title: 'Условия использования',
-    updatedLabel: 'Дата обновления: 05.10.2026',
+    updatedLabel: 'Дата обновления: 17.11.2026',
     intro:
-      'Moba Universe — неофициальный fan-made сайт об MOBA-играх: главная страница, гайды и личные страницы пользователей. Мы не связаны с Moonton Technology Co., Ltd. и не одобрены ею. Материалы носят образовательный и информационный характер для игроков.',
+      'Moba Universe — неофициальный fan-made сайт об MOBA-играх: главная страница, гайды, тесты и личные страницы пользователей. Мы не связаны с Moonton Technology Co., Ltd. и не одобрены ею. Материалы носят образовательный и информационный характер для игроков.',
     sections: [
       {
         title: 'Неофициальный статус',
@@ -33,6 +33,14 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
           'Гайды, статьи и советы на Сайте предназначены для самообучения и развития навыков в MOBA.',
           'Контент не гарантирует конкретный результат в игре и не заменяет официальные материалы разработчиков.',
           'Мы стремимся публиковать точную и полезную информацию, но не несём ответственности за устаревшие данные после обновлений игр.',
+        ],
+      },
+      {
+        title: 'Тесты',
+        paragraphs: [
+          'Тесты публикует оператор Сайта. Их можно проходить без регистрации и без входа в аккаунт.',
+          'Выбранные ответы отправляются на сервер только чтобы показать результат и пояснения. Они не сохраняются и не привязываются к профилю.',
+          'Результат теста не является официальной оценкой навыка и не связан с игровыми серверами. Оператор может изменить или снять тест без предупреждения.',
         ],
       },
       {
@@ -69,9 +77,9 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
   },
   en: {
     title: 'Terms of Use',
-    updatedLabel: 'Last updated: 05.10.2026',
+    updatedLabel: 'Last updated: 17.11.2026',
     intro:
-      'Moba Universe is an unofficial fan-made website about MOBA games: a homepage, guides, and personal player pages. We are not affiliated with or endorsed by Moonton Technology Co., Ltd. Materials are for educational and informational purposes for players.',
+      'Moba Universe is an unofficial fan-made website about MOBA games: a homepage, guides, tests, and personal player pages. We are not affiliated with or endorsed by Moonton Technology Co., Ltd. Materials are for educational and informational purposes for players.',
     sections: [
       {
         title: 'Unofficial status',
@@ -87,6 +95,14 @@ export const termsDocs: Record<'ru' | 'en', TermsDoc> = {
           'Guides, articles, and tips on the Site are intended for self-learning and skill development in MOBA games.',
           'Content does not guarantee specific in-game results and does not replace official developer materials.',
           'We aim to publish accurate, useful information but are not liable for outdated data after game updates.',
+        ],
+      },
+      {
+        title: 'Tests',
+        paragraphs: [
+          'Tests are published by the Site operator. They can be taken without registration and without signing in.',
+          'Selected answers are sent to the server only to show the result and explanations. They are not stored and are not linked to a profile.',
+          'A test result is not an official skill rating and is not connected to game servers. The operator may change or remove a test without notice.',
         ],
       },
       {

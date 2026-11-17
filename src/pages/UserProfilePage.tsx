@@ -76,7 +76,8 @@ export default function UserProfilePage() {
         if (data.moderation_status === 'approved' && searchParams.get('preview') === '1') {
           const next = new URLSearchParams(searchParams)
           next.delete('preview')
-          void navigate({ pathname: `/${lang}/user/${userId}`, search: next.toString() ? `?${next}` : '' }, { replace: true })
+          const routeLang = window.location.pathname.match(/^\/(ru|en)(?=\/|$)/)?.[1] || lang
+          void navigate({ pathname: `/${routeLang}/user/${userId}`, search: next.toString() ? `?${next}` : '' }, { replace: true })
         }
       } catch {
         setError(true)
@@ -85,7 +86,7 @@ export default function UserProfilePage() {
       }
     }
     void load()
-  }, [userId, lang, navigate, searchParams])
+  }, [userId, navigate, searchParams])
 
   if (loading) {
     return (

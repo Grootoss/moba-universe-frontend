@@ -24,9 +24,8 @@ describe('resolveListCoverUrl', () => {
 })
 
 describe('coverCandidateUrls', () => {
-  it('tries the phone crop, then the small thumb, then the full cover', () => {
+  it('tries the small thumb before the full cover on a phone list', () => {
     expect(coverCandidateUrls('/images/article-13.png', '/images/article-13.png', 'mobile', 'list')).toEqual([
-      '/images/promo/mobile/article-13.jpg',
       '/images/thumbs/article-13.jpg',
       '/images/article-13.png',
     ])

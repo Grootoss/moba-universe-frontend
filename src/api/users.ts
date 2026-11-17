@@ -1,7 +1,12 @@
+import { cachedJson, peekCached } from './cache'
 import type { PublicProfile } from '../types/profile'
 
-export async function fetchPublicUsers(): Promise<PublicProfile[]> {
-  const res = await fetch('/api/users')
-  if (!res.ok) throw new Error('Failed to load users')
-  return res.json()
+const USERS_URL = '/api/users'
+
+export function peekPublicUsers(): PublicProfile[] | undefined {
+  return peekCached<PublicProfile[]>(USERS_URL)
+}
+
+export function fetchPublicUsers(): Promise<PublicProfile[]> {
+  return cachedJson<PublicProfile[]>(USERS_URL)
 }

@@ -17,9 +17,9 @@ export interface PrivacyDoc {
 export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
   ru: {
     title: 'Политика конфиденциальности',
-    updatedLabel: 'Дата обновления: 05.10.2026',
+    updatedLabel: 'Дата обновления: 17.11.2026',
     intro:
-      'Настоящая Политика определяет порядок обработки и защиты персональных данных пользователей сайта Moba Universe (далее — «Сайт») — неофициального fan-made ресурса с главной страницей, гайдами по MOBA-играм, каталогом пользователей и личными страницами игроков, а также сервисом регистрации, авторизации и личного кабинета. Политика составлена с учётом требований Федерального закона РФ от 27.07.2006 № 152-ФЗ «О персональных данных», иных применимых норм РФ и, где применимо, правил прозрачности использования cookies и положений GDPR для посетителей из ЕС/ЕЭЗ.',
+      'Настоящая Политика определяет порядок обработки и защиты персональных данных пользователей сайта Moba Universe (далее — «Сайт») — неофициального fan-made ресурса с главной страницей, гайдами по MOBA-играм, тестами, каталогом пользователей и личными страницами игроков, а также сервисом регистрации, авторизации и личного кабинета. Политика составлена с учётом требований Федерального закона РФ от 27.07.2006 № 152-ФЗ «О персональных данных», иных применимых норм РФ и, где применимо, правил прозрачности использования cookies и положений GDPR для посетителей из ЕС/ЕЭЗ.',
     sections: [
       {
         title: 'Оператор персональных данных',
@@ -37,8 +37,8 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Область применения',
         paragraphs: [
-          'Политика применяется ко всем посетителям и зарегистрированным пользователям Сайта, которые просматривают материалы (гайды), регистрируются, входят в личный кабинет, заполняют и отправляют профиль на модерацию, просматривают превью своего профиля, используют публичные страницы профилей после публикации и элементы интерфейса (язык, тема оформления).',
-          'Сайт не принимает платежи и не предназначен для заключения платных договоров с пользователем в электронной форме. Контент гайдов носит информационный характер и публикуется оператором (редакционный контент). Регистрация нужна для создания, модерации и (после одобрения) публикации публичного профиля игрока.',
+          'Политика применяется ко всем посетителям и зарегистрированным пользователям Сайта, которые просматривают материалы (гайды), проходят тесты, регистрируются, входят в личный кабинет, заполняют и отправляют профиль на модерацию, просматривают превью своего профиля, используют публичные страницы профилей после публикации и элементы интерфейса (язык, тема оформления).',
+          'Сайт не принимает платежи и не предназначен для заключения платных договоров с пользователем в электронной форме. Гайды и тесты носят информационный характер и публикуются оператором (редакционный контент). Тест можно пройти без регистрации. Регистрация нужна для создания, модерации и (после одобрения) публикации публичного профиля игрока.',
         ],
       },
       {
@@ -50,6 +50,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'Данные учётной записи при регистрации и входе: адрес электронной почты (email, по нему выполняется вход), имя пользователя (username: 3–10 букв, не является адресом для входа), хэш пароля (сам пароль в открытом виде не хранится), роль учётной записи (пользователь / модератор / администратор)',
           'Данные профиля: никнейм для отображения и текст «о себе» (проходят модерацию перед публикацией и при повторном изменении после одобрения); выбранные MOBA-игры и ранги из справочника Сайта (сохраняются сразу и могут обновляться без отдельной модерации); статус модерации (черновик / на проверке / одобрен / отклонён); замечания модератора (при отклонении); признак публичности профиля',
           'Контакты профиля: ссылки Telegram и Discord и признак, показывать ли ссылку всем. Заявки на обмен контактами: кто отправил запрос, кому, статус (ожидает / принято / отклонено)',
+          'Ответы теста: выбранные варианты отправляются на сервер только чтобы посчитать результат и показать пояснения. Они не сохраняются в базе и не привязываются к учётной записи',
           'Технические данные сессии авторизации: JWT access/refresh-токены на стороне клиента (браузер) и служебные сведения для проверки токена на сервере',
           'Технические данные визита: IP-адрес, тип и версия браузера (User-Agent), язык, приблизительные данные об устройстве и экране, дата и время визита, URL страниц, referrer — могут фиксироваться в журналах веб-сервера/хостинга при обращении к Сайту, а также собираться Яндекс.Метрикой при наличии согласия на аналитику',
           'Данные об использовании Сайта: просмотры страниц, клики, глубина просмотра, отказы (при включённой аналитике)',
@@ -77,7 +78,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'регистрация и аутентификация пользователей',
           'создание, редактирование, модерация никнейма и текста «о себе», сохранение игр и рангов, превью и отображение публичных профилей',
           'обеспечение работы интерфейса Сайта (язык, тема оформления)',
-          'публикация редакционных материалов (гайдов) оператором Сайта',
+          'публикация редакционных материалов (гайдов и тестов) оператором Сайта и показ результата теста без сохранения ответов',
           'связь с пользователем по вопросам аккаунта, модерации и прав субъекта данных',
           'соблюдение требований законодательства о персональных данных, cookies и аналитике',
           'анализ посещаемости и улучшение структуры, контента и удобства Сайта (только после согласия на Яндекс.Метрику)',
@@ -124,7 +125,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Срок хранения',
         paragraphs: [
-          'Данные учётной записи, профиля, контактов и заявок на обмен контактами хранятся, пока аккаунт активен либо до удаления/блокирования по вашему запросу или по инициативе оператора при нарушении правил/закона, а также в сроки, необходимые для исполнения обязанностей оператора. IP успешной регистрации хранится вместе с учётной записью. Записи неудачных попыток входа удаляются по истечении 15 минут.',
+          'Данные учётной записи, профиля, контактов и заявок на обмен контактами хранятся, пока аккаунт активен либо до удаления/блокирования по вашему запросу или по инициативе оператора при нарушении правил/закона, а также в сроки, необходимые для исполнения обязанностей оператора. IP успешной регистрации хранится вместе с учётной записью. Записи неудачных попыток входа удаляются по истечении 15 минут. Ответы тестов на сервере не хранятся.',
           'Настройки языка, темы, согласия и токены сессии хранятся в вашем браузере до выхода, удаления вами (localStorage) или очистки данных сайта.',
           'Срок хранения данных в Яндекс.Метрике определяется настройками счётчика и политикой Яндекса.',
         ],
@@ -195,9 +196,9 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
   },
   en: {
     title: 'Privacy Policy',
-    updatedLabel: 'Last updated: 05.10.2026',
+    updatedLabel: 'Last updated: 17.11.2026',
     intro:
-      'This Privacy Policy explains how Moba Universe (the “Site”) — an unofficial fan-made resource with a homepage, MOBA guides, a user directory, public player pages, registration, authentication, and a personal cabinet — processes and protects personal data. It is prepared with regard to Russian Federal Law No. 152-FZ “On Personal Data”, other applicable Russian rules, cookie transparency practices, and, where applicable, the GDPR for visitors from the EU/EEA.',
+      'This Privacy Policy explains how Moba Universe (the “Site”) — an unofficial fan-made resource with a homepage, MOBA guides, tests, a user directory, public player pages, registration, authentication, and a personal cabinet — processes and protects personal data. It is prepared with regard to Russian Federal Law No. 152-FZ “On Personal Data”, other applicable Russian rules, cookie transparency practices, and, where applicable, the GDPR for visitors from the EU/EEA.',
     sections: [
       {
         title: 'Data controller',
@@ -215,8 +216,8 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Scope',
         paragraphs: [
-          'This Policy applies to visitors and registered users who view guides, register, sign in to the personal cabinet, fill in and submit a profile for moderation, open a preview of their own profile, use public profile pages after publication, and use interface preferences (language, theme).',
-          'The Site does not process payments and provides informational guide content published by the operator (editorial content). Registration exists to create, moderate, and (after approval) publish a public player profile.',
+          'This Policy applies to visitors and registered users who view guides, take tests, register, sign in to the personal cabinet, fill in and submit a profile for moderation, open a preview of their own profile, use public profile pages after publication, and use interface preferences (language, theme).',
+          'The Site does not process payments. Guides and tests are informational content published by the operator (editorial content). A test can be taken without registration. Registration exists to create, moderate, and (after approval) publish a public player profile.',
         ],
       },
       {
@@ -226,6 +227,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'Account data on registration and login: email address (used to sign in), username (3–10 letters, not the sign-in identifier), password hash (the password itself is not stored in plain text), account role (user / moderator / administrator)',
           'Profile data: display nickname and “about” text (moderated before publishing and again if changed after approval); selected MOBA games and ranks from the Site catalog (saved immediately and may update without a separate review); moderation status (draft / pending / approved / rejected); moderator notes (on rejection); public visibility flag',
           'Profile contacts: Telegram and Discord links and whether each link is public. Contact-exchange requests: who asked, whom they asked, and the status (pending / accepted / declined)',
+          'Test answers: selected options are sent to the server only to calculate the result and show explanations. They are not stored in the database and are not linked to an account',
           'Auth session data: JWT access/refresh tokens on the client (browser) and server-side token validation data',
           'Technical visit data: IP address, browser type/version (User-Agent), language, approximate device/screen data, visit date/time, page URLs, referrer — may appear in web server/hosting logs when you use the Site, and may be collected by Yandex Metrika if you consent to analytics',
           'Usage data: page views, clicks, engagement metrics (when analytics is enabled)',
@@ -253,7 +255,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
           'register and authenticate users',
           'create and edit profiles, moderate nickname/about, save games and ranks, preview and display public profiles',
           'provide Site interface features (language, theme)',
-          'publish editorial materials (guides) by the Site operator',
+          'publish editorial materials (guides and tests) and show a test result without storing the answers',
           'communicate about the account, moderation, and data-subject rights',
           'comply with personal data, cookie, and analytics transparency duties',
           'analyze traffic and improve content/UX (only after Yandex Metrika consent)',
@@ -298,7 +300,7 @@ export const privacyDocs: Record<'ru' | 'en', PrivacyDoc> = {
       {
         title: 'Retention',
         paragraphs: [
-          'Account, profile, contact, and contact-request data are kept while the account is active, or until deletion/blocking upon your request or by the operator for violations of rules/law, and for periods required to meet legal duties. The IP of a successful registration is stored with the account. Failed sign-in records are deleted after 15 minutes.',
+          'Account, profile, contact, and contact-request data are kept while the account is active, or until deletion/blocking upon your request or by the operator for violations of rules/law, and for periods required to meet legal duties. The IP of a successful registration is stored with the account. Failed sign-in records are deleted after 15 minutes. Test answers are not stored on the server.',
           'Language, theme, consent, and session tokens remain in your browser until logout, manual removal, or clearing site data.',
           'Retention in Yandex Metrika follows the counter settings and Yandex policy.',
         ],

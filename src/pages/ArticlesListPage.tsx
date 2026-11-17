@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { fetchArticlesPage } from '../api/articles'
+import { fetchArticlesPage, GUIDES_LIST_PAGE_SIZE, peekArticlesPage } from '../api/articles'
 import { fetchCategories } from '../api/categories'
 import ArticleCard from '../components/ArticleCard'
 import ErrorState from '../components/ErrorState'
@@ -13,7 +13,6 @@ import { siteOrigin } from '../utils/prerender'
 import type { ArticlePreview } from '../types/article'
 import type { ArticleCategory } from '../api/categories'
 
-const PAGE_SIZE = 40
 const TAG_SKELETON_COUNT = 10
 
 export default function ArticlesListPage() {
@@ -23,11 +22,16 @@ export default function ArticlesListPage() {
 
   const categorySlug = (searchParams.get('category') ?? '').trim()
 
-  const [articles, setArticles] = useState<ArticlePreview[]>([])
+  const cachedGuides = peekArticlesPage({
+    lang: lang === 'en' ? 'en' : 'ru',
+    page: 1,
+    pageSize: GUIDES_LIST_PAGE_SIZE,
+  })
+  const [articles, setArticles] = useState<ArticlePreview[]>(cachedGuides?.items ?? [])
   const [categories, setCategories] = useState<ArticleCategory[]>([])
   const [categoriesReady, setCategoriesReady] = useState(false)
   const [query, setQuery] = useState('')
-  const [listReady, setListReady] = useState(false)
+  const [listReady, setListReady] = useState(Boolean(cachedGuides))
   const [error, setError] = useState(false)
 
   const sortedCategories = useMemo(() => ensureArticleCategories(categories), [categories])
@@ -78,7 +82,6 @@ export default function ArticlesListPage() {
 
   useEffect(() => {
     let cancelled = false
-    setListReady(false)
     setError(false)
 
     const run = async () => {
@@ -86,7 +89,7 @@ export default function ArticlesListPage() {
         const data = await fetchArticlesPage({
           lang: lang === 'en' ? 'en' : 'ru',
           page: 1,
-          pageSize: PAGE_SIZE,
+          pageSize: GUIDES_LIST_PAGE_SIZE,
           q: query,
           category: categorySlug,
         })

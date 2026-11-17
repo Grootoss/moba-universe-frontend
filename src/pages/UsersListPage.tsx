@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { fetchPublicUsers } from '../api/users'
+import { fetchPublicUsers, peekPublicUsers } from '../api/users'
 import ErrorState from '../components/ErrorState'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
@@ -14,9 +14,10 @@ export default function UsersListPage() {
   const { t } = useTranslation()
   const { lang = 'ru' } = useParams()
 
-  const [users, setUsers] = useState<PublicProfile[]>([])
+  const cachedUsers = peekPublicUsers()
+  const [users, setUsers] = useState<PublicProfile[]>(cachedUsers ?? [])
   const [query, setQuery] = useState('')
-  const [listReady, setListReady] = useState(false)
+  const [listReady, setListReady] = useState(cachedUsers !== undefined)
   const [error, setError] = useState(false)
 
   const visibleUsers = useMemo(() => {
@@ -56,7 +57,6 @@ export default function UsersListPage() {
 
   useEffect(() => {
     let cancelled = false
-    setListReady(false)
     void (async () => {
       try {
         const data = await fetchPublicUsers()

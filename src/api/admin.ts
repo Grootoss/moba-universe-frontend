@@ -1,3 +1,4 @@
+import type { AdminQuiz, AdminQuizCard, QuizFormPayload } from '../types/quiz'
 import type {
   AdminArticle,
   AdminCategory,
@@ -77,6 +78,66 @@ export async function updateAdminArticle(
     throw new Error(typeof err.detail === 'string' ? err.detail : 'Update failed')
   }
   return res.json()
+}
+
+function adminError(err: { detail?: unknown }, fallback: string): string {
+  const detail = err.detail
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        if (item && typeof item === 'object' && 'msg' in item) return String(item.msg)
+        return String(item)
+      })
+      .join('\n')
+  }
+  return fallback
+}
+
+export async function fetchAdminQuizzes(): Promise<AdminQuizCard[]> {
+  const res = await fetch('/api/admin/quizzes', { headers: authHeaders() })
+  if (!res.ok) throw new Error('Failed to load tests')
+  return res.json()
+}
+
+export async function fetchAdminQuiz(id: number): Promise<AdminQuiz> {
+  const res = await fetch(`/api/admin/quizzes/${id}`, { headers: authHeaders() })
+  if (!res.ok) throw new Error('Failed to load test')
+  return res.json()
+}
+
+export async function createAdminQuiz(body: QuizFormPayload): Promise<AdminQuiz> {
+  const res = await fetch('/api/admin/quizzes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(adminError(err, 'Create failed'))
+  }
+  return res.json()
+}
+
+export async function updateAdminQuiz(id: number, body: QuizFormPayload): Promise<AdminQuiz> {
+  const res = await fetch(`/api/admin/quizzes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(adminError(err, 'Update failed'))
+  }
+  return res.json()
+}
+
+export async function deleteAdminQuiz(id: number): Promise<void> {
+  const res = await fetch(`/api/admin/quizzes/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error('Delete failed')
 }
 
 export async function deleteAdminArticle(id: number): Promise<void> {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { clearTokens, fetchMe, getAccessToken, logout as logoutSession } from '../api/auth'
@@ -43,6 +43,7 @@ export default function ProfileCabinetPage() {
   const [nickname, setNickname] = useState('')
   const [bio, setBio] = useState('')
   const [games, setGames] = useState<GameRow[]>([])
+  const loadedRef = useRef(false)
 
   usePageTitle(t('cabinetTitle'))
 
@@ -119,15 +120,18 @@ export default function ProfileCabinetPage() {
   }
 
   useEffect(() => {
+    if (loadedRef.current) return
     const init = async () => {
       if (!getAccessToken()) {
         void navigate(`/${lang}/login`, { replace: true })
         return
       }
+      loadedRef.current = true
       try {
         setMe(await fetchMe())
         await load()
       } catch {
+        loadedRef.current = false
         clearTokens()
         void navigate(`/${lang}/login`, { replace: true })
       }

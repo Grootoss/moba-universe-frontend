@@ -1,14 +1,16 @@
+import { cachedJson, peekCached } from './cache'
 import type { Article, ArticlePreview, ArticlesPage, Lang } from '../types/article'
 
 const API_BASE = '/api/evergreen/articles'
+export const GUIDES_LIST_PAGE_SIZE = 40
 
-export async function fetchArticlesPage(options: {
+export function articlesPageUrl(options: {
   lang?: Lang
   page?: number
   pageSize?: number
   q?: string
   category?: string
-}): Promise<ArticlesPage> {
+}): string {
   const params = new URLSearchParams({
     paginated: 'true',
     lang: options.lang === 'en' ? 'en' : 'ru',
@@ -19,12 +21,27 @@ export async function fetchArticlesPage(options: {
   if (q) params.set('q', q)
   const category = options.category?.trim()
   if (category) params.set('category', category)
+  return `${API_BASE}?${params}`
+}
 
-  const response = await fetch(`${API_BASE}?${params}`)
-  if (!response.ok) {
-    throw new Error('Failed to load articles')
-  }
-  return response.json()
+export function peekArticlesPage(options: {
+  lang?: Lang
+  page?: number
+  pageSize?: number
+  q?: string
+  category?: string
+}): ArticlesPage | undefined {
+  return peekCached<ArticlesPage>(articlesPageUrl(options))
+}
+
+export function fetchArticlesPage(options: {
+  lang?: Lang
+  page?: number
+  pageSize?: number
+  q?: string
+  category?: string
+}): Promise<ArticlesPage> {
+  return cachedJson<ArticlesPage>(articlesPageUrl(options))
 }
 
 export async function fetchArticles(lang: Lang = 'ru'): Promise<ArticlePreview[]> {

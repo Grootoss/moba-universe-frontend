@@ -6,6 +6,7 @@ import LangSwitch from './LangSwitch'
 import ThemeToggle from './ThemeToggle'
 import { useMobileMenu } from '../hooks/useMobileMenu'
 import { fetchMe, getAccessToken } from '../api/auth'
+import { prefetchPublicSections } from '../api/prefetch'
 
 function LoginIcon() {
   return (
@@ -55,6 +56,16 @@ export default function AppHeader() {
       .catch(() => setIsLoggedIn(false))
   }, [])
 
+  useEffect(() => {
+    const run = () => prefetchPublicSections(lang)
+    const idle = window.requestIdleCallback?.(run)
+    const timer = idle === undefined ? window.setTimeout(run, 150) : undefined
+    return () => {
+      if (idle !== undefined) window.cancelIdleCallback(idle)
+      if (timer !== undefined) window.clearTimeout(timer)
+    }
+  }, [lang])
+
   const navClass = ({ isActive }: { isActive: boolean }) =>
     `header__nav-link${isActive ? ' router-link-active' : ''}`
 
@@ -70,10 +81,31 @@ export default function AppHeader() {
             <span className="logo__suffix">{t('logoSuffix')}</span>
           </Link>
           <nav className="header__nav" aria-label="Main">
-            <NavLink to={`/${lang}/evergreen`} className={navClass} onClick={close}>
+            <NavLink
+              to={`/${lang}/evergreen`}
+              className={navClass}
+              onClick={close}
+              onMouseEnter={() => prefetchPublicSections(lang)}
+              onFocus={() => prefetchPublicSections(lang)}
+            >
               {t('navGuides')}
             </NavLink>
-            <NavLink to={`/${lang}/users`} className={navClass} onClick={close}>
+            <NavLink
+              to={`/${lang}/tests`}
+              className={navClass}
+              onClick={close}
+              onMouseEnter={() => prefetchPublicSections(lang)}
+              onFocus={() => prefetchPublicSections(lang)}
+            >
+              {t('navTests')}
+            </NavLink>
+            <NavLink
+              to={`/${lang}/users`}
+              className={navClass}
+              onClick={close}
+              onMouseEnter={() => prefetchPublicSections(lang)}
+              onFocus={() => prefetchPublicSections(lang)}
+            >
               {t('navUsers')}
             </NavLink>
           </nav>
@@ -126,10 +158,13 @@ export default function AppHeader() {
               <NavLink to={`/${lang}`} className={mobileNavClass} onClick={close} end>
                 {t('navHome')}
               </NavLink>
-              <NavLink to={`/${lang}/evergreen`} className={mobileNavClass} onClick={close}>
+              <NavLink to={`/${lang}/evergreen`} className={mobileNavClass} onClick={close} onMouseEnter={() => prefetchPublicSections(lang)}>
                 {t('navGuides')}
               </NavLink>
-              <NavLink to={`/${lang}/users`} className={mobileNavClass} onClick={close}>
+              <NavLink to={`/${lang}/tests`} className={mobileNavClass} onClick={close} onMouseEnter={() => prefetchPublicSections(lang)}>
+                {t('navTests')}
+              </NavLink>
+              <NavLink to={`/${lang}/users`} className={mobileNavClass} onClick={close} onMouseEnter={() => prefetchPublicSections(lang)}>
                 {t('navUsers')}
               </NavLink>
               {isLoggedIn ? (

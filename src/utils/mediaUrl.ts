@@ -61,7 +61,7 @@ export function coverCandidateUrls(
   const full = resolveMediaUrl(cover)
   const small = resolveListCoverUrl(cover, thumb)
   const promo = resolvePromoCoverUrl(cover, slot)
-  const ordered = purpose === 'hero' ? [promo, full, small] : [promo, small, full]
+  const ordered = purpose === 'hero' ? [promo, full, small] : [small, full]
   const urls: string[] = []
   for (const url of ordered) {
     if (url && !urls.includes(url)) urls.push(url)

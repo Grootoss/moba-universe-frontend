@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Outlet, useLocation, useParams } from 'react-router-dom'
 import AppHeader from './components/AppHeader'
 import AppFooter from './components/AppFooter'
@@ -15,18 +15,31 @@ export default function App() {
 
   const isAdminLayout = location.pathname.startsWith('/admin') && location.pathname !== '/admin/login'
 
-  const blockIndexing = useMemo(() => {
-    if (isAdminLayout) return true
-    if (/^\/(ru|en)\/user\/[^/]+/.test(location.pathname)) return true
+  const robotsContent = useMemo(() => {
+    const indexable = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+    const hidden = 'noindex, nofollow'
+    if (isAdminLayout) return hidden
+    if (/^\/(ru|en)\/user\/[^/]+/.test(location.pathname)) return hidden
+    if (/^\/(ru|en)\/tests$/.test(location.pathname)) return 'noindex, follow'
+    if (/^\/(ru|en)\/tests\/[^/]+\/play\/?$/.test(location.pathname)) return hidden
     const parts = location.pathname.split('/').filter(Boolean)
     const routeTail = parts[parts.length - 1]
-    if (location.pathname === '/404' || parts.length === 0) return false
-    return PRIVATE_ROUTE_SUFFIXES.has(routeTail) || location.pathname.includes('/profile')
+    if (location.pathname === '/404' || parts.length === 0) return indexable
+    if (PRIVATE_ROUTE_SUFFIXES.has(routeTail) || location.pathname.includes('/profile')) return hidden
+    return indexable
   }, [location.pathname, isAdminLayout])
 
   useSeoRoute()
 
+  const previousPath = useRef(location.pathname)
   useLayoutEffect(() => {
+    const previous = previousPath.current
+    previousPath.current = location.pathname
+    const withoutLang = (path: string) => path.replace(/^\/(ru|en)(?=\/|$)/, '') || '/'
+    const sameProfile =
+      withoutLang(previous) === withoutLang(location.pathname) &&
+      /^\/(profile|user\/[^/]+)$/.test(withoutLang(location.pathname))
+    if (sameProfile) return
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
     }
@@ -49,11 +62,9 @@ export default function App() {
     }
     robots.setAttribute(
       'content',
-      blockIndexing
-        ? 'noindex, nofollow'
-        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+      robotsContent,
     )
-  }, [blockIndexing])
+  }, [robotsContent])
 
   useEffect(() => {
     if (isPrerender()) return

@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
+import { prefetchPublicSections } from '../api/prefetch'
 import { siteOrigin } from '../utils/prerender'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 export default function HomePage() {
   const { t } = useTranslation()
@@ -23,6 +24,10 @@ export default function HomePage() {
   )
 
   usePageTitle(t('homeTitle'), t('homeSubtitle'))
+
+  useEffect(() => {
+    prefetchPublicSections(lang)
+  }, [lang])
   useJsonLd(schema)
   usePrerenderReady(true)
 
@@ -39,6 +44,11 @@ export default function HomePage() {
           <span className="home-tile__kicker">{t('homeGuidesKicker')}</span>
           <span className="home-tile__title">{t('navGuides')}</span>
           <span className="home-tile__text">{t('homeGuidesText')}</span>
+        </Link>
+        <Link to={`/${lang}/tests`} className="home-tile">
+          <span className="home-tile__kicker">{t('homeTestsKicker')}</span>
+          <span className="home-tile__title">{t('navTests')}</span>
+          <span className="home-tile__text">{t('homeTestsText')}</span>
         </Link>
         <Link to={`/${lang}/users`} className="home-tile">
           <span className="home-tile__kicker">{t('homeUsersKicker')}</span>

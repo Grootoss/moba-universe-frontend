@@ -56,6 +56,12 @@ export default function AdminCabinetPage() {
             <p>{t('adminArticlesHint')}</p>
           </Link>
         ) : null}
+        {role === 'admin' ? (
+          <Link to="/admin/quizzes" className="admin-card">
+            <h2>{t('adminNavQuizzes')}</h2>
+            <p>{t('adminQuizzesHint')}</p>
+          </Link>
+        ) : null}
         <Link to="/admin/profiles" className="admin-card">
           <h2>{t('adminNavProfiles')}</h2>
           <p>{t('adminProfilesHint')}</p>

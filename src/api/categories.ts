@@ -1,3 +1,5 @@
+import { cachedJson } from './cache'
+
 export interface ArticleCategory {
   slug: string
   name_ru: string
@@ -6,10 +8,6 @@ export interface ArticleCategory {
 
 const API_BASE = '/api/evergreen/categories'
 
-export async function fetchCategories(): Promise<ArticleCategory[]> {
-  const response = await fetch(API_BASE)
-  if (!response.ok) {
-    throw new Error('Failed to load categories')
-  }
-  return response.json()
+export function fetchCategories(): Promise<ArticleCategory[]> {
+  return cachedJson<ArticleCategory[]>(API_BASE)
 }

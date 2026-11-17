@@ -77,18 +77,27 @@ async function buildRoutes() {
   for (const lang of LANGS) {
     routes.push(`/${lang}`)
     routes.push(`/${lang}/evergreen`)
+    routes.push(`/${lang}/tests`)
     routes.push(`/${lang}/users`)
     routes.push(`/${lang}/privacy`)
     routes.push(`/${lang}/terms`)
   }
 
   let slugs = []
+  let quizSlugs = []
   let userIds = []
   try {
     slugs = await collectArticleSlugs()
     log(`articles: ${slugs.length}`)
   } catch (err) {
     log(`WARN articles API unavailable (${err.message}) — start backend on :8000 for full prerender`)
+  }
+  try {
+    const quizzes = await fetchJson(`${API_URL}/api/quizzes?lang=ru`)
+    quizSlugs = Array.isArray(quizzes) ? quizzes.map((quiz) => quiz.slug).filter(Boolean) : []
+    log(`tests: ${quizSlugs.length}`)
+  } catch (err) {
+    log(`WARN quizzes API unavailable (${err.message})`)
   }
   try {
     userIds = await collectUserIds()
@@ -100,6 +109,9 @@ async function buildRoutes() {
   for (const lang of LANGS) {
     for (const slug of slugs) {
       routes.push(`/${lang}/evergreen/${slug}`)
+    }
+    for (const slug of quizSlugs) {
+      routes.push(`/${lang}/tests/${slug}`)
     }
     for (const id of userIds) {
       routes.push(`/${lang}/user/${id}`)

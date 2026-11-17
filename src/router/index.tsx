@@ -16,6 +16,11 @@ import AdminCabinetPage from '../pages/admin/AdminCabinetPage'
 import AdminArticlesPage from '../pages/admin/AdminArticlesPage'
 import AdminArticleFormPage from '../pages/admin/AdminArticleFormPage'
 import AdminProfilesPage from '../pages/admin/AdminProfilesPage'
+import TestsListPage from '../pages/TestsListPage'
+import TestPage from '../pages/TestPage'
+import TestPreviewPage from '../pages/TestPreviewPage'
+import AdminQuizzesPage from '../pages/admin/AdminQuizzesPage'
+import AdminQuizFormPage from '../pages/admin/AdminQuizFormPage'
 import {
   LangLayout,
   LegacyRedirect,
@@ -49,6 +54,9 @@ export const router = createBrowserRouter([
           { path: 'evergreen/:slug', element: <ArticlePage /> },
           { path: 'user/:id', element: <UserProfilePage /> },
           { path: 'users', element: <UsersListPage /> },
+          { path: 'tests', element: <TestsListPage /> },
+          { path: 'tests/:slug/play', element: <TestPage /> },
+          { path: 'tests/:slug', element: <TestPreviewPage /> },
           { path: 'login', element: <LoginPage /> },
           { path: 'register', element: <RegisterPage /> },
           {
@@ -103,6 +111,30 @@ export const router = createBrowserRouter([
         element: (
           <RequireAdmin>
             <AdminArticleFormPage />
+          </RequireAdmin>
+        ),
+      },
+      {
+        path: '/admin/quizzes',
+        element: (
+          <RequireAdmin>
+            <AdminQuizzesPage />
+          </RequireAdmin>
+        ),
+      },
+      {
+        path: '/admin/quizzes/new',
+        element: (
+          <RequireAdmin>
+            <AdminQuizFormPage />
+          </RequireAdmin>
+        ),
+      },
+      {
+        path: '/admin/quizzes/:id/edit',
+        element: (
+          <RequireAdmin>
+            <AdminQuizFormPage />
           </RequireAdmin>
         ),
       },
