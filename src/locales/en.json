@@ -249,7 +249,7 @@
   "adminArticleCategory": "Category",
   "adminArticleCover": "Cover (full size)",
   "adminArticleCoverThumb": "List thumbnail (small)",
-  "adminArticleCoverHint": "Paste a large cover from /images. Phones and tablets get a smaller 16:9 crop of it. Desktop lists use the small thumbnail when one is set.",
+  "adminArticleCoverHint": "Put the full frame in public/images/name.png and set /images/name.png. The build makes the previews: /images/thumbs/name.jpg (desktop list, 320px wide), /images/promo/mobile/name.jpg (phone, 640×360) and /images/promo/tablet/name.jpg (tablet, 1024×576). A custom list image goes in the second field as /images/thumbs/…. Rebuild and redeploy the frontend after adding files.",
   "adminPreview": "Preview",
   "adminPreviewDraftHint": "Drafts are not public — publish first",
   "adminFilterAll": "All",

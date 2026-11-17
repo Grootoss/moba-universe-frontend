@@ -148,6 +148,24 @@ export default function ArticlesListPage() {
         </button>
       </form>
 
+      <div className="articles-categories-select">
+        {showTagSkeleton ? (
+          <span className="articles-categories__skeleton articles-categories__skeleton--select" aria-hidden="true" />
+        ) : (
+          <label>
+            <span className="visually-hidden">{t('articlesCategoriesLabel')}</span>
+            <select value={categorySlug} onChange={(e) => onCategorySelect(e.target.value)}>
+              <option value="">{t('articlesCategoryAll')}</option>
+              {sortedCategories.map((cat) => (
+                <option key={cat.slug} value={cat.slug}>
+                  {categoryDisplayName(cat, i18n.language)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+
       <nav className="articles-categories" aria-label={t('articlesCategoriesLabel')}>
         {showTagSkeleton ? (
           Array.from({ length: TAG_SKELETON_COUNT }, (_, i) => (

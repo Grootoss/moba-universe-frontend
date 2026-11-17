@@ -947,6 +947,10 @@ body.has-cookie-banner {
   align-self: stretch;
 }
 
+.articles-categories-select {
+  display: none;
+}
+
 .articles-categories {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -955,9 +959,45 @@ body.has-cookie-banner {
   margin: 0 0 1.75rem;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .articles-categories {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: none;
+  }
+
+  .articles-categories-select {
+    display: block;
+    margin: 0 0 1.75rem;
+  }
+
+  .articles-categories-select select {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 2.75rem 0.7rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background-color: var(--bg-card);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: center;
+    text-align-last: center;
+    appearance: none;
+    box-shadow: var(--shadow);
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+      linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - 1.2rem) 50%,
+      calc(100% - 0.8rem) 50%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+  }
+
+  .articles-categories-select select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent-glow);
   }
 }
 
@@ -1008,6 +1048,12 @@ body.has-cookie-banner {
   background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-elevated) 50%, var(--bg-card) 100%);
   background-size: 200% 100%;
   animation: tag-skeleton 1.1s ease-in-out infinite;
+}
+
+.articles-categories__skeleton--select {
+  display: block;
+  min-height: 3rem;
+  border-radius: 12px;
 }
 
 @keyframes tag-skeleton {
@@ -2565,6 +2611,20 @@ body.has-cookie-banner {
   min-height: calc(100vh - var(--header-height));
   min-height: calc(100dvh - var(--header-height));
   padding-bottom: 0;
+}
+
+@media (max-width: 1023px) {
+  .layout:has(.home-page) .layout__main {
+    padding-bottom: max(3.5rem, env(safe-area-inset-bottom));
+  }
+
+  .home-page {
+    justify-content: flex-start;
+  }
+
+  .home-tiles {
+    margin-bottom: 0.5rem;
+  }
 }
 
 .home-page {

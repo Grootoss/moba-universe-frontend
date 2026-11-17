@@ -1,5 +1,7 @@
 import { siteOrigin } from './prerender'
 
+export type CoverSlot = 'mobile' | 'tablet' | 'desktop'
+
 /** Normalize cover/media path from DB: URL, /images/x.png, or bare filename. */
 export function resolveMediaUrl(path?: string | null): string | null {
   const raw = path?.trim()
@@ -19,27 +21,50 @@ export function absoluteMediaUrl(path?: string | null): string | null {
   return `${origin.replace(/\/$/, '')}${resolved}`
 }
 
-/** 16:9 crop generated from a local /images cover. Null for remote URLs. */
-export function resolvePromoCoverUrl(cover?: string | null, kind: 'mobile' | 'tablet' = 'mobile'): string | null {
-  const src = resolveMediaUrl(cover)
-  if (!src) return null
-  const local = src.match(/^\/images\/([^/]+)$/)
+/** File sitting directly in /images, not in thumbs/ or promo/. */
+function localCoverStem(url: string | null): string | null {
+  if (!url) return null
+  const local = url.match(/^\/images\/([^/]+)$/)
   if (!local) return null
-  const stem = local[1].replace(/\.[^.]+$/, '')
+  return local[1].replace(/\.[^.]+$/, '')
+}
+
+/** 16:9 crop generated from a local /images cover. Null for remote URLs. */
+export function resolvePromoCoverUrl(cover?: string | null, kind: CoverSlot | 'mobile' | 'tablet' = 'mobile'): string | null {
+  const stem = localCoverStem(resolveMediaUrl(cover))
+  if (!stem || kind === 'desktop') return null
   return `/images/promo/${kind}/${stem}.jpg`
 }
 
-/** Small list thumbnail — never point at the original full-size cover. */
+/**
+ * Small list thumbnail.
+ * A thumb that points at the full /images file is rewritten to /images/thumbs/{stem}.jpg.
+ * Remote URLs are kept as-is.
+ */
 export function resolveListCoverUrl(cover?: string | null, thumb?: string | null): string | null {
   const explicit = resolveMediaUrl(thumb)
-  if (explicit) return explicit
   const src = resolveMediaUrl(cover)
-  if (!src) return null
-  if (src.startsWith('/images/thumbs/')) return src
-  const local = src.match(/^\/images\/([^/]+)$/)
-  if (local) {
-    const stem = local[1].replace(/\.[^.]+$/, '')
-    return `/images/thumbs/${stem}.jpg`
+  if (explicit?.startsWith('/images/thumbs/')) return explicit
+  if (explicit && !localCoverStem(explicit)) return explicit
+  const stem = localCoverStem(src) || localCoverStem(explicit)
+  if (stem) return `/images/thumbs/${stem}.jpg`
+  return explicit || src
+}
+
+/** Ordered URLs to try. The first that loads wins; later ones are fallbacks. */
+export function coverCandidateUrls(
+  cover?: string | null,
+  thumb?: string | null,
+  slot: CoverSlot = 'desktop',
+  purpose: 'list' | 'hero' = 'list',
+): string[] {
+  const full = resolveMediaUrl(cover)
+  const small = resolveListCoverUrl(cover, thumb)
+  const promo = resolvePromoCoverUrl(cover, slot)
+  const ordered = purpose === 'hero' ? [promo, full, small] : [promo, small, full]
+  const urls: string[] = []
+  for (const url of ordered) {
+    if (url && !urls.includes(url)) urls.push(url)
   }
-  return null
+  return urls
 }

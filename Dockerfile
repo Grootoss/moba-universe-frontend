@@ -29,6 +29,7 @@ RUN apk add --no-cache iptables
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY nginx-security-headers.conf /etc/nginx/security-headers.conf
 COPY docker/40-clamp-mss.sh /docker-entrypoint.d/40-clamp-mss.sh
-RUN chmod +x /docker-entrypoint.d/40-clamp-mss.sh
+COPY docker/50-reload-certs.sh /docker-entrypoint.d/50-reload-certs.sh
+RUN chmod +x /docker-entrypoint.d/40-clamp-mss.sh /docker-entrypoint.d/50-reload-certs.sh
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80 443

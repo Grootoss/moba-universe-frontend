@@ -249,7 +249,7 @@
   "adminArticleCategory": "Категория",
   "adminArticleCover": "Обложка (полный размер)",
   "adminArticleCoverThumb": "Обложка для списка (маленькая)",
-  "adminArticleCoverHint": "Вставь большую обложку из /images. Для телефона и планшета из неё нарезаются меньшие кадры 16:9. На компьютере в списке используется маленькая обложка, если она указана.",
+  "adminArticleCoverHint": "Полный кадр клади в public/images/имя.png и укажи /images/имя.png. Сборка сама делает превью: /images/thumbs/имя.jpg (список на компьютере, ширина 320), /images/promo/mobile/имя.jpg (телефон, 640×360) и /images/promo/tablet/имя.jpg (планшет, 1024×576). Своё превью списка — во втором поле, путь /images/thumbs/…. После новых файлов пересобери и задеплой фронтенд.",
   "adminPreview": "Превью",
   "adminPreviewDraftHint": "Черновик не виден на сайте — сначала опубликуй",
   "adminFilterAll": "Все",

@@ -28,6 +28,7 @@ export default function UserProfilePage() {
   const userId = Number(id)
   const isApproved = profile?.moderation_status === 'approved'
   const showPreviewBanner = Boolean(profile) && !isApproved
+  const signedIn = meId !== null && meId > 0
   const usersBackTo = `/${lang}/users`
 
   const profileSchema = useMemo(() => {
@@ -128,6 +129,7 @@ export default function UserProfilePage() {
         <p className="profile-bio__text">{profile.bio}</p>
       </section>
 
+      {signedIn ? (
       <section className="profile-contacts-block">
         <h2 className="profile-section__title">{t('contactsTitle')}</h2>
         {profile.contacts?.length ? (
@@ -143,7 +145,7 @@ export default function UserProfilePage() {
         ) : (
           <p className="profile-bio__text">{t('contactsModalEmpty')}</p>
         )}
-        {meId !== null && meId > 0 && meId !== profile.user_id && profile.contact_status !== 'accepted' ? (
+        {meId !== profile.user_id && profile.contact_status !== 'accepted' ? (
           profile.contact_status === 'pending' ? (
             <p className="profile-bio__text">{t('contactsPendingOut')}</p>
           ) : (
@@ -171,15 +173,11 @@ export default function UserProfilePage() {
             </>
           )
         ) : null}
-        {meId === null ? (
-          <p className="profile-bio__text">
-            <Link to={`/${lang}/login`}>{t('contactsLoginToRequest')}</Link>
-          </p>
-        ) : null}
         {profile.contact_status === 'accepted' ? (
           <p className="profile-bio__text">{t('contactsAlreadyConnected')}</p>
         ) : null}
       </section>
+      ) : null}
 
       {profile.games.length ? (
         <section className="profile-games">

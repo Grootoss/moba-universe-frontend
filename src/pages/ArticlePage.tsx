@@ -3,13 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchArticle, fetchArticles } from '../api/articles'
 import ErrorState from '../components/ErrorState'
-import FadeImage from '../components/FadeImage'
+import GuideCover from '../components/GuideCover'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePrerenderReady } from '../hooks/usePrerenderReady'
 import { formatArticleDate } from '../utils/formatDate'
 import { isPrerender, siteOrigin } from '../utils/prerender'
-import { absoluteMediaUrl, resolveMediaUrl, resolvePromoCoverUrl } from '../utils/mediaUrl'
+import { absoluteMediaUrl, resolveMediaUrl } from '../utils/mediaUrl'
 import type { Article, ArticlePreview, Lang } from '../types/article'
 
 function pickRelated(items: ArticlePreview[], slug: string): ArticlePreview[] {
@@ -194,17 +194,15 @@ export default function ArticlePage() {
           ) : null}
           {coverSrc ? (
             <figure className="article__cover">
-              <FadeImage
-                src={coverSrc}
+              <GuideCover
+                cover={article?.cover_image}
+                thumb={article?.cover_thumb}
+                purpose="hero"
                 alt={translation.title}
                 width={1200}
                 height={675}
                 loading="eager"
                 fetchPriority="high"
-                sources={[
-                  { media: '(max-width: 767px)', src: resolvePromoCoverUrl(article?.cover_image, 'mobile') || '' },
-                  { media: '(max-width: 1023px)', src: resolvePromoCoverUrl(article?.cover_image, 'tablet') || '' },
-                ]}
               />
             </figure>
           ) : null}
