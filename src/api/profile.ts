@@ -1,3 +1,4 @@
+import type { AdminPage } from '../types/quiz'
 import { authHeaders, refreshTokens } from './auth'
 import type {
   AdminProfile,
@@ -110,8 +111,8 @@ export async function fetchProfileOptions(): Promise<ProfileOptions> {
   return res.json()
 }
 
-export async function fetchAdminProfiles(): Promise<AdminProfile[]> {
-  const res = await authFetch('/api/admin/profiles')
+export async function fetchAdminProfiles(page = 1): Promise<AdminPage<AdminProfile>> {
+  const res = await authFetch(`/api/admin/profiles?page=${page}&page_size=20`)
   if (!res.ok) throw new Error('Failed to load profiles')
   return res.json()
 }

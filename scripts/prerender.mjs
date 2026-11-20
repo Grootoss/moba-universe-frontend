@@ -78,6 +78,7 @@ async function buildRoutes() {
     routes.push(`/${lang}`)
     routes.push(`/${lang}/evergreen`)
     routes.push(`/${lang}/tests`)
+    routes.push(`/${lang}/tests/mlbb`)
     routes.push(`/${lang}/users`)
     routes.push(`/${lang}/privacy`)
     routes.push(`/${lang}/terms`)
@@ -93,8 +94,10 @@ async function buildRoutes() {
     log(`WARN articles API unavailable (${err.message}) — start backend on :8000 for full prerender`)
   }
   try {
-    const quizzes = await fetchJson(`${API_URL}/api/quizzes?lang=ru`)
-    quizSlugs = Array.isArray(quizzes) ? quizzes.map((quiz) => quiz.slug).filter(Boolean) : []
+    const quizzes = await fetchJson(`${API_URL}/api/quizzes?lang=ru&game=mlbb`)
+    quizSlugs = Array.isArray(quizzes)
+      ? quizzes.map((quiz) => `${quiz.game || 'mlbb'}/${quiz.slug}`).filter((item) => !item.endsWith('/'))
+      : []
     log(`tests: ${quizSlugs.length}`)
   } catch (err) {
     log(`WARN quizzes API unavailable (${err.message})`)

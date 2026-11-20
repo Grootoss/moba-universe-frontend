@@ -36,8 +36,6 @@ export default function ArticlesListPage() {
 
   const sortedCategories = useMemo(() => ensureArticleCategories(categories), [categories])
 
-  const previews = articles
-
   const emptyMessage = categorySlug ? t('articlesCategoryEmpty') : t('articlesEmpty')
   const showTagSkeleton = error || !categoriesReady
 
@@ -206,9 +204,9 @@ export default function ArticlesListPage() {
         />
       ) : (
         <>
-          {listReady && !previews.length ? <p className="state">{emptyMessage}</p> : null}
+          {listReady && !articles.length ? <p className="state">{emptyMessage}</p> : null}
           <div className="articles-grid">
-            {previews.map((article, index) => (
+            {articles.map((article, index) => (
               <ArticleCard
                 key={article.id_article}
                 slug={article.slug}

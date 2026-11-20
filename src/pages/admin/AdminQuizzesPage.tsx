@@ -2,22 +2,29 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { deleteAdminQuiz, fetchAdminQuizzes } from '../../api/admin'
+import AdminPager from '../../components/AdminPager'
 import type { AdminQuizCard } from '../../types/quiz'
+import { quizStartPath } from '../../api/quizzes'
 import { usePageTitle } from '../../hooks/usePageTitle'
 
 export default function AdminQuizzesPage() {
   const { t, i18n } = useTranslation()
   const [rows, setRows] = useState<AdminQuizCard[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   usePageTitle(t('adminNavQuizzes'))
 
-  const load = async () => {
+  const load = async (nextPage = page) => {
     setLoading(true)
     setError('')
     try {
-      setRows(await fetchAdminQuizzes())
+      const data = await fetchAdminQuizzes(nextPage)
+      setRows(data.items)
+      setTotal(data.total)
+      setPage(data.page)
     } catch {
       setError(t('adminLoadError'))
     } finally {
@@ -26,14 +33,16 @@ export default function AdminQuizzesPage() {
   }
 
   useEffect(() => {
-    void load()
-  }, [])
+    void load(page)
+  }, [page])
 
   const onDelete = async (id: number) => {
     if (!confirm(t('adminConfirmDelete'))) return
     try {
       await deleteAdminQuiz(id)
-      await load()
+      const nextPage = rows.length === 1 && page > 1 ? page - 1 : page
+      setPage(nextPage)
+      await load(nextPage)
     } catch {
       setError(t('adminLoadError'))
     }
@@ -85,7 +94,7 @@ export default function AdminQuizzesPage() {
                   </td>
                   <td className="admin-actions admin-actions--inline">
                     {quiz.status === 'published' ? (
-                      <a href={`/${lang}/tests/${quiz.slug}`} target="_blank" rel="noreferrer">
+                      <a href={quizStartPath(lang, quiz.slug, quiz.game)} target="_blank" rel="noreferrer">
                         {t('testsStart')}
                       </a>
                     ) : null}
@@ -98,6 +107,7 @@ export default function AdminQuizzesPage() {
               ))}
             </tbody>
           </table>
+          <AdminPager page={page} pageSize={20} total={total} onPage={setPage} />
         </div>
       )}
     </div>

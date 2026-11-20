@@ -1,20 +1,38 @@
 import { cachedJson, peekCached } from './cache'
-import type { QuizCard, QuizFormPayload, QuizLang, QuizPublic, QuizSubmitResult } from '../types/quiz'
+import type { QuizCard, QuizLang, QuizPublic, QuizSubmitResult } from '../types/quiz'
 
 function langOf(lang: string | undefined): QuizLang {
   return lang === 'en' ? 'en' : 'ru'
 }
 
-export function quizzesUrl(lang: string | undefined): string {
-  return `/api/quizzes?lang=${langOf(lang)}`
+export function quizGame(game?: string | null): string {
+  return game || 'mlbb'
 }
 
-export function peekQuizzes(lang: string | undefined): QuizCard[] | undefined {
-  return peekCached<QuizCard[]>(quizzesUrl(lang))
+export function quizListPath(lang: string, game?: string | null): string {
+  return `/${lang}/tests/${quizGame(game)}`
 }
 
-export function fetchQuizzes(lang: string | undefined): Promise<QuizCard[]> {
-  return cachedJson<QuizCard[]>(quizzesUrl(lang))
+export function quizStartPath(lang: string, slug: string, game?: string | null): string {
+  return `${quizListPath(lang, game)}/${slug}`
+}
+
+export function quizPlayPath(lang: string, slug: string, game?: string | null): string {
+  return `${quizStartPath(lang, slug, game)}/play`
+}
+
+export function quizzesUrl(lang: string | undefined, game?: string): string {
+  const params = new URLSearchParams({ lang: langOf(lang) })
+  if (game) params.set('game', game)
+  return `/api/quizzes?${params}`
+}
+
+export function peekQuizzes(lang: string | undefined, game = 'mlbb'): QuizCard[] | undefined {
+  return peekCached<QuizCard[]>(quizzesUrl(lang, game))
+}
+
+export function fetchQuizzes(lang: string | undefined, game = 'mlbb'): Promise<QuizCard[]> {
+  return cachedJson<QuizCard[]>(quizzesUrl(lang, game))
 }
 
 export async function fetchQuizPreview(slug: string, lang: string | undefined): Promise<QuizCard> {
@@ -41,26 +59,4 @@ export async function submitQuiz(
   })
   if (!response.ok) throw new Error('Failed to submit test')
   return response.json()
-}
-
-export function quizPayload(input: {
-  slug: string
-  status: string
-  titleRu: string
-  titleEn: string
-  descriptionRu: string
-  descriptionEn: string
-  questions: QuizFormPayload['questions']
-  results: QuizFormPayload['results']
-}): QuizFormPayload {
-  return {
-    slug: input.slug.trim(),
-    status: input.status,
-    translations: {
-      ru: { title: input.titleRu.trim(), description: input.descriptionRu.trim() },
-      en: { title: input.titleEn.trim(), description: input.descriptionEn.trim() },
-    },
-    questions: input.questions,
-    results: input.results,
-  }
 }

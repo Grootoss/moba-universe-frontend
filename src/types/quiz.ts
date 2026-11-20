@@ -2,6 +2,9 @@ export type QuizLang = 'ru' | 'en'
 
 export type QuizCard = {
   slug: string
+  game?: string
+  role?: string
+  cover_image?: string | null
   title: string
   description: string
   question_count: number
@@ -22,6 +25,8 @@ export type QuizQuestionPublic = {
 
 export type QuizPublic = {
   slug: string
+  game?: string
+  role?: string
   title: string
   description: string
   questions: QuizQuestionPublic[]
@@ -109,9 +114,18 @@ export type AdminQuizCard = {
   id: number
   slug: string
   status: string
+  game?: string
+  role?: string
   title_ru: string
   title_en: string
   question_count: number
+}
+
+export type AdminPage<T> = {
+  items: T[]
+  total: number
+  page: number
+  page_size: number
 }
 
 export type AdminQuiz = QuizFormPayload & {

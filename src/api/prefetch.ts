@@ -8,5 +8,5 @@ export function prefetchPublicSections(lang: string | undefined) {
   void fetchCategories()
   void fetchArticlesPage({ lang: language, page: 1, pageSize: GUIDES_LIST_PAGE_SIZE })
   void fetchPublicUsers()
-  void fetchQuizzes(language)
+  void fetchQuizzes(language, 'mlbb')
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { fetchAdminProfiles, moderateProfile, unlockAdminProfile } from '../../api/profile'
+import AdminPager from '../../components/AdminPager'
 import type { AdminProfile } from '../../types/profile'
 import { usePageTitle } from '../../hooks/usePageTitle'
 
@@ -9,6 +10,8 @@ export default function AdminProfilesPage() {
   const { t, i18n } = useTranslation()
   const lang = i18n.language === 'en' ? 'en' : 'ru'
   const [rows, setRows] = useState<AdminProfile[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [rejectNotes, setRejectNotes] = useState<Record<number, string>>({})
@@ -16,11 +19,14 @@ export default function AdminProfilesPage() {
 
   usePageTitle(t('adminNavProfiles'))
 
-  const load = async () => {
+  const load = async (nextPage = page) => {
     setLoading(true)
     setError('')
     try {
-      setRows(await fetchAdminProfiles())
+      const data = await fetchAdminProfiles(nextPage)
+      setRows(data.items)
+      setTotal(data.total)
+      setPage(data.page)
     } catch {
       setError(t('adminLoadError'))
     } finally {
@@ -29,8 +35,8 @@ export default function AdminProfilesPage() {
   }
 
   useEffect(() => {
-    void load()
-  }, [])
+    void load(page)
+  }, [page])
 
   const onUnlock = async (p: AdminProfile) => {
     setBusyId(p.user_id)
@@ -176,6 +182,7 @@ export default function AdminProfilesPage() {
               ))}
             </tbody>
           </table>
+          <AdminPager page={page} pageSize={20} total={total} onPage={setPage} />
           <p className="admin-hint">{t('adminProfilesModHint')}</p>
         </div>
       )}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { fetchQuizPreview } from '../api/quizzes'
+import { fetchQuizPreview, quizListPath, quizPlayPath } from '../api/quizzes'
 import ErrorState from '../components/ErrorState'
 import { useJsonLd } from '../hooks/useJsonLd'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -11,7 +11,7 @@ import { siteOrigin } from '../utils/prerender'
 
 export default function TestPreviewPage() {
   const { t } = useTranslation()
-  const { lang = 'ru', slug = '' } = useParams()
+  const { lang = 'ru', game = 'mlbb', slug = '' } = useParams()
   const [quiz, setQuiz] = useState<QuizCard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -19,6 +19,7 @@ export default function TestPreviewPage() {
   usePageTitle(quiz?.title || t('testsTitle'), quiz?.description || t('testsSubtitle'))
   usePrerenderReady(!loading)
 
+  const folder = quiz?.game || game
   const schema = useMemo(
     () =>
       quiz
@@ -27,11 +28,11 @@ export default function TestPreviewPage() {
             '@type': 'WebPage',
             name: quiz.title,
             description: quiz.description,
-            url: `${siteOrigin()}/${lang}/tests/${quiz.slug}`,
+            url: `${siteOrigin()}${quizListPath(lang, folder)}/${quiz.slug}`,
             inLanguage: lang,
           }
         : null,
-    [quiz, lang],
+    [quiz, lang, folder],
   )
   useJsonLd(schema)
 
@@ -60,7 +61,7 @@ export default function TestPreviewPage() {
         title={t('errorTestTitle')}
         description={t('errorTestText')}
         actionLabel={t('testsBack')}
-        actionTo={`/${lang}/tests`}
+        actionTo={quizListPath(lang, game)}
       />
     )
   }
@@ -69,9 +70,10 @@ export default function TestPreviewPage() {
 
   return (
     <div className="page quiz-page">
-      <Link to={`/${lang}/tests`} className="back-link">
+      <Link to={`${quizListPath(lang, folder)}?role=${quiz.role || 'roam'}`} className="back-link">
         {t('testsBack')}
       </Link>
+      {quiz.cover_image ? <img className="quiz-preview__cover" src={quiz.cover_image} alt="" /> : null}
       <header className="page-header">
         <h1 className="page-header__title">{quiz.title}</h1>
         {quiz.description ? <p className="page-header__subtitle">{quiz.description}</p> : null}
@@ -79,7 +81,7 @@ export default function TestPreviewPage() {
       <p className="article-card__date">
         {t('testsQuestionCount')}: {quiz.question_count}
       </p>
-      <Link className="btn btn--primary quiz-next" to={`/${lang}/tests/${quiz.slug}/play`} rel="nofollow">
+      <Link className="btn btn--primary quiz-next" to={quizPlayPath(lang, quiz.slug, folder)} rel="nofollow">
         {t('testsIntroStart')}
       </Link>
     </div>

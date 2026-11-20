@@ -1,29 +1,30 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { deleteAdminArticle, fetchAdminArticles } from '../../api/admin'
+import AdminPager from '../../components/AdminPager'
 import type { AdminArticle } from '../../types/profile'
 import { usePageTitle } from '../../hooks/usePageTitle'
 
 export default function AdminArticlesPage() {
   const { t, i18n } = useTranslation()
   const [rows, setRows] = useState<AdminArticle[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all')
 
   usePageTitle(t('adminNavArticles'))
 
-  const filtered = useMemo(() => {
-    if (statusFilter === 'all') return rows
-    return rows.filter((a) => a.status === statusFilter)
-  }, [rows, statusFilter])
-
-  const load = async () => {
+  const load = async (nextPage = page, nextStatus = statusFilter) => {
     setLoading(true)
     setError('')
     try {
-      setRows(await fetchAdminArticles())
+      const data = await fetchAdminArticles(nextPage, nextStatus)
+      setRows(data.items)
+      setTotal(data.total)
+      setPage(data.page)
     } catch {
       setError(t('adminLoadError'))
     } finally {
@@ -32,14 +33,14 @@ export default function AdminArticlesPage() {
   }
 
   useEffect(() => {
-    void load()
-  }, [])
+    void load(page, statusFilter)
+  }, [page, statusFilter])
 
   const onDelete = async (id: number) => {
     if (!confirm(t('adminConfirmDelete'))) return
     try {
       await deleteAdminArticle(id)
-      await load()
+      await load(page, statusFilter)
     } catch {
       setError(t('adminLoadError'))
     }
@@ -63,7 +64,13 @@ export default function AdminArticlesPage() {
       <div className="admin-filters">
         <label className="admin-field admin-field--inline">
           <span>{t('adminColStatus')}</span>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}>
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setPage(1)
+              setStatusFilter(e.target.value as typeof statusFilter)
+            }}
+          >
             <option value="all">{t('adminFilterAll')}</option>
             <option value="published">published</option>
             <option value="draft">draft</option>
@@ -88,7 +95,7 @@ export default function AdminArticlesPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((a) => (
+              {rows.map((a) => (
                 <tr key={a.id}>
                   <td>{a.id}</td>
                   <td>{a.slug}</td>
@@ -122,7 +129,8 @@ export default function AdminArticlesPage() {
               ))}
             </tbody>
           </table>
-          {!filtered.length ? <p className="admin-hint">{t('adminArticlesEmptyFilter')}</p> : null}
+          {!rows.length ? <p className="admin-hint">{t('adminArticlesEmptyFilter')}</p> : null}
+          <AdminPager page={page} pageSize={20} total={total} onPage={setPage} />
           <p className="admin-hint">{t('adminArticlesCrudHint')}</p>
         </div>
       )}

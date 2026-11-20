@@ -59,8 +59,6 @@ export default function ArticlePage() {
     return article.translations[currentLang] ?? article.translations.en
   }, [article, i18n.language])
 
-  const relatedPreviews = related
-
   const createdLabel = formatArticleDate(article?.created_at, lang)
   const updatedLabel = formatArticleDate(article?.updated_at, lang)
 
@@ -219,13 +217,13 @@ export default function ArticlePage() {
         ) : null}
       </article>
 
-      {relatedPreviews.length ? (
+      {related.length ? (
         <section className="article-related">
           <h2 className="article-related__title">
             {i18n.language === 'ru' ? 'Похожие статьи' : 'Related Articles'}
           </h2>
           <ul className="article-related__list">
-            {relatedPreviews.map((item) => (
+            {related.map((item) => (
               <li key={item.slug}>
                 <Link to={`/${lang}/evergreen/${item.slug}`}>{item.title}</Link>
                 {item.excerpt?.trim() ? <p className="article-related__excerpt">{item.excerpt}</p> : null}

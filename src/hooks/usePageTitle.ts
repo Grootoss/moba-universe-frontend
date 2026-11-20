@@ -71,7 +71,7 @@ export function usePageTitle(
     const normalizedDesc = desc.slice(0, 300)
     ensureMetaDescription().setAttribute('content', normalizedDesc)
 
-    const indexablePath = window.location.pathname.replace(/^(\/(?:ru|en)\/tests\/[^/]+)\/play\/?$/, '$1')
+    const indexablePath = window.location.pathname.replace(/\/play\/?$/, '')
     const pageUrl = `${siteOrigin()}${indexablePath}${window.location.search}`
     const imageUrl = absoluteImageUrl(image) || DEFAULT_OG_IMAGE
     const isDefaultImage = imageUrl === DEFAULT_OG_IMAGE

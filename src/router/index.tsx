@@ -17,6 +17,7 @@ import AdminArticlesPage from '../pages/admin/AdminArticlesPage'
 import AdminArticleFormPage from '../pages/admin/AdminArticleFormPage'
 import AdminProfilesPage from '../pages/admin/AdminProfilesPage'
 import TestsListPage from '../pages/TestsListPage'
+import GameTestsPage from '../pages/GameTestsPage'
 import TestPage from '../pages/TestPage'
 import TestPreviewPage from '../pages/TestPreviewPage'
 import AdminQuizzesPage from '../pages/admin/AdminQuizzesPage'
@@ -40,6 +41,17 @@ function LegacyUserRedirect() {
   return <Navigate to={localizePath(`/user/${id ?? ''}`)} replace />
 }
 
+function LegacyQuizRedirect() {
+  const { lang = 'ru', slug = '', game = '' } = useParams()
+  if (game === 'mlbb') return <GameTestsPage />
+  return <Navigate to={`/${lang}/tests/mlbb/${game || slug}`} replace />
+}
+
+function LegacyQuizPlayRedirect() {
+  const { lang = 'ru', slug = '' } = useParams()
+  return <Navigate to={`/${lang}/tests/mlbb/${slug}/play`} replace />
+}
+
 export const router = createBrowserRouter([
   {
     element: <App />,
@@ -55,8 +67,10 @@ export const router = createBrowserRouter([
           { path: 'user/:id', element: <UserProfilePage /> },
           { path: 'users', element: <UsersListPage /> },
           { path: 'tests', element: <TestsListPage /> },
-          { path: 'tests/:slug/play', element: <TestPage /> },
-          { path: 'tests/:slug', element: <TestPreviewPage /> },
+          { path: 'tests/:slug/play', element: <LegacyQuizPlayRedirect /> },
+          { path: 'tests/:game/:slug/play', element: <TestPage /> },
+          { path: 'tests/:game/:slug', element: <TestPreviewPage /> },
+          { path: 'tests/:game', element: <LegacyQuizRedirect /> },
           { path: 'login', element: <LoginPage /> },
           { path: 'register', element: <RegisterPage /> },
           {

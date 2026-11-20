@@ -28,8 +28,7 @@ export function useSeoRoute() {
 
   useEffect(() => {
     const cleanPath = pathname || '/'
-    const play = cleanPath.match(/^\/(ru|en)\/tests\/[^/]+\/play\/?$/)
-    const indexablePath = play ? cleanPath.replace(/\/play\/?$/, '') : cleanPath
+    const indexablePath = cleanPath.replace(/\/play\/?$/, '')
     const canonical = ensureLink('canonical')
     canonical.setAttribute('href', absoluteUrl(indexablePath))
 

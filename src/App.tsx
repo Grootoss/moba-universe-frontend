@@ -20,8 +20,9 @@ export default function App() {
     const hidden = 'noindex, nofollow'
     if (isAdminLayout) return hidden
     if (/^\/(ru|en)\/user\/[^/]+/.test(location.pathname)) return hidden
-    if (/^\/(ru|en)\/tests$/.test(location.pathname)) return 'noindex, follow'
-    if (/^\/(ru|en)\/tests\/[^/]+\/play\/?$/.test(location.pathname)) return hidden
+    if (/^\/(ru|en)\/tests\/?$/.test(location.pathname)) return 'noindex, follow'
+    if (/^\/(ru|en)\/tests\/mlbb\/?$/.test(location.pathname)) return 'noindex, follow'
+    if (/^\/(ru|en)\/tests\/.+\/play\/?$/.test(location.pathname)) return hidden
     const parts = location.pathname.split('/').filter(Boolean)
     const routeTail = parts[parts.length - 1]
     if (location.pathname === '/404' || parts.length === 0) return indexable

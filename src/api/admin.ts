@@ -1,4 +1,4 @@
-import type { AdminQuiz, AdminQuizCard, QuizFormPayload } from '../types/quiz'
+import type { AdminPage, AdminQuiz, AdminQuizCard, QuizFormPayload } from '../types/quiz'
 import type {
   AdminArticle,
   AdminCategory,
@@ -33,8 +33,13 @@ export async function login(email: string, password: string): Promise<string> {
   return data.access_token
 }
 
-export async function fetchAdminArticles(): Promise<AdminArticle[]> {
-  const res = await fetch('/api/admin/articles', { headers: authHeaders() })
+export async function fetchAdminArticles(
+  page = 1,
+  status: 'all' | 'draft' | 'published' = 'all',
+): Promise<AdminPage<AdminArticle>> {
+  const params = new URLSearchParams({ page: String(page), page_size: '20' })
+  if (status !== 'all') params.set('status', status)
+  const res = await fetch(`/api/admin/articles?${params}`, { headers: authHeaders() })
   if (!res.ok) throw new Error('Failed to load articles')
   return res.json()
 }
@@ -94,8 +99,8 @@ function adminError(err: { detail?: unknown }, fallback: string): string {
   return fallback
 }
 
-export async function fetchAdminQuizzes(): Promise<AdminQuizCard[]> {
-  const res = await fetch('/api/admin/quizzes', { headers: authHeaders() })
+export async function fetchAdminQuizzes(page = 1): Promise<AdminPage<AdminQuizCard>> {
+  const res = await fetch(`/api/admin/quizzes?page=${page}&page_size=20`, { headers: authHeaders() })
   if (!res.ok) throw new Error('Failed to load tests')
   return res.json()
 }
